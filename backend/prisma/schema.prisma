@@ -1,0 +1,165 @@
+// ============================================================
+//  FRONTIER — Data Model
+//  Cities → Blocks (20) → Modules (25 each = 500) → Progress
+//  Strictly linear "Hard Gate" progression enforced in service layer
+//  and backed by DB constraints below.
+// ============================================================
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ---------- Identity & Billing ----------
+
+enum SubscriptionTier {
+  BASE      // R$49.90 — single Base City
+  GLOBAL    // R$79.90 — two languages/cities in parallel
+}
+
+enum SubscriptionStatus {
+  ACTIVE
+  PAST_DUE
+  CANCELED
+  TRIALING
+}
+
+model User {
+  id            String             @id @default(cuid())
+  email         String             @unique
+  passwordHash  String
+  displayName   String
+  nativeLang    String             // e.g. "pt-BR" — drives Reverse-Engineering of Speech
+  tier          SubscriptionTier   @default(BASE)
+  subStatus     SubscriptionStatus @default(TRIALING)
+  biometricKey  String?            // opaque handle for FaceID/WebAuthn credential
+
+  enrollments   CityEnrollment[]
+  progress      ModuleProgress[]
+  certificates  Certification[]
+
+  createdAt     DateTime           @default(now())
+  updatedAt     DateTime           @updatedAt
+}
+
+// ---------- Content tree ----------
+
+model City {
+  id        String  @id @default(cuid())
+  name      String  @unique         // "London", "Berlin", ...
+  language  String                  // "en", "es"
+  // Cities form an ordered conquest path. order 1 = default Base City.
+  order     Int     @unique
+  isDefault Boolean @default(false)
+
+  blocks       Block[]
+  enrollments  CityEnrollment[]
+  certificates Certification[]
+}
+
+model Block {
+  id        String @id @default(cuid())
+  city      City   @relation(fields: [cityId], references: [id], onDelete: Cascade)
+  cityId    String
+  index     Int    // 1..20 within the city
+  title     String // "Customs", "Nightlife", ...
+  phase     Int    // 1..4 (Survival, Social Base, Integration...)
+
+  modules   Module[]
+
+  @@unique([cityId, index])
+}
+
+enum ObstacleType {
+  SOCIAL
+  NOISE
+  LANGUAGE
+}
+
+model Module {
+  id        String  @id @default(cuid())
+  block     Block   @relation(fields: [blockId], references: [id], onDelete: Cascade)
+  blockId   String
+
+  // GLOBAL ordinal across the whole city: 1..500. This single integer is
+  // the backbone of the linear Hard Gate.
+  sequence  Int
+
+  indexInBlock Int           // 1..25
+  title        String
+  obstacle     ObstacleType
+  // Action -> Obstacle -> Consequence content lives in versioned JSON,
+  // authored/generated separately (NOT hardcoded in chat).
+  scriptRef    String?       // pointer to content store / prompt template
+
+  progress  ModuleProgress[]
+
+  @@unique([blockId, indexInBlock])
+  // Sequence must be unique per city — enforced via Block->City join in service,
+  // and guaranteed unique here per block scope plus seed integrity checks.
+}
+
+// ---------- User progression ----------
+
+model CityEnrollment {
+  id        String   @id @default(cuid())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId    String
+  city      City     @relation(fields: [cityId], references: [id])
+  cityId    String
+  // The furthest module the user is allowed to attempt (the open gate).
+  unlockedSequence Int  @default(1)
+  isActive  Boolean  @default(true)
+  startedAt DateTime @default(now())
+
+  // A user can only be enrolled in a city once. GLOBAL tier allows up to 2
+  // active enrollments (enforced in service layer / DB trigger).
+  @@unique([userId, cityId])
+}
+
+enum ModuleStatus {
+  LOCKED               // cannot be attempted yet
+  UNLOCKED             // available to attempt
+  ATTEMPTED            // started / submitted, not yet passing
+  PROFICIENCY_PASSED   // AI engine validated proficiency
+}
+
+model ModuleProgress {
+  id          String       @id @default(cuid())
+  user        User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId      String
+  module      Module       @relation(fields: [moduleId], references: [id], onDelete: Cascade)
+  moduleId    String
+
+  status      ModuleStatus @default(LOCKED)
+  // AI rubric output (0..100) and the threshold that was applied.
+  proficiencyScore Int?
+  attempts    Int          @default(0)
+  passedAt    DateTime?
+
+  updatedAt   DateTime     @updatedAt
+
+  // One progress row per user per module — the source of truth for the gate.
+  @@unique([userId, moduleId])
+  @@index([userId, status])
+}
+
+// ---------- Certification (unlocks next city) ----------
+
+model Certification {
+  id        String   @id @default(cuid())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId    String
+  city      City     @relation(fields: [cityId], references: [id])
+  cityId    String
+  issuedAt  DateTime @default(now())
+  // AI-generated proficiency certificate granted ONLY after all 500
+  // modules of the city reach PROFICIENCY_PASSED.
+  serialNo  String   @unique
+
+  @@unique([userId, cityId])
+}

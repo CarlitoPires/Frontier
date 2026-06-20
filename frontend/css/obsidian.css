@@ -1,0 +1,198 @@
+/* ============================================================
+   FRONTIER — "Obsidian Editorial" Design System
+   Quiet Luxury · Architectural Minimalism · Dark Mode
+   ============================================================ */
+
+:root {
+  /* --- Core surfaces (deep blacks → graphite) --- */
+  --obsidian:      #050506;
+  --slate-900:     #0b0c0e;
+  --slate-800:     #121317;
+  --slate-700:     #1a1c21;
+  --charcoal:      #232529;
+  --graphite:      #34373d;
+  --ash:           #5a5e66;
+
+  /* --- Text --- */
+  --ink-100:       #f4f4f2;
+  --ink-300:       #c7c8c4;
+  --ink-500:       #8b8d8a;
+  --ink-700:       #565853;
+
+  /* --- Metallic accents (passport stamps) --- */
+  --gold-matte:    #b89968;
+  --gold-soft:     #cdb287;
+  --silver-matte:  #a9adb4;
+  --silver-soft:   #d6d9de;
+
+  /* --- Signal --- */
+  --signal-pass:   #6f8f6a;   /* proficiency passed  */
+  --signal-lock:   #3a3c41;   /* locked module       */
+  --signal-warn:   #b8744f;   /* obstacle / hostile  */
+
+  /* --- Glass --- */
+  --glass-bg:      rgba(20, 21, 25, 0.55);
+  --glass-stroke:  rgba(255, 255, 255, 0.06);
+  --glass-hi:      rgba(255, 255, 255, 0.10);
+
+  /* --- Type --- */
+  --font-display: "SF Pro Display", "Helvetica Neue", "Inter", system-ui, sans-serif;
+  --font-body:    "Inter", "SF Pro Text", "Helvetica Neue", system-ui, sans-serif;
+  --tracking-editorial: 0.18em;
+
+  /* --- Motion (cinematic, never bouncy) --- */
+  --ease-cine:   cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-soft:   cubic-bezier(0.4, 0, 0.2, 1);
+  --dur-fast:    240ms;
+  --dur-mid:     520ms;
+  --dur-slow:    900ms;
+
+  --radius:      14px;
+  --radius-lg:   22px;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+html, body { height: 100%; }
+
+body {
+  font-family: var(--font-body);
+  background: var(--obsidian);
+  color: var(--ink-300);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+  overflow-x: hidden;
+}
+
+/* Cinematic atmospheric backdrop — subtle graphite vignette + grain */
+.atmosphere {
+  position: fixed;
+  inset: 0;
+  z-index: -2;
+  background:
+    radial-gradient(120% 90% at 50% -10%, #16181d 0%, var(--obsidian) 55%),
+    radial-gradient(80% 60% at 85% 110%, #0f1013 0%, transparent 60%);
+}
+.atmosphere::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  opacity: 0.035;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  mix-blend-mode: overlay;
+}
+
+/* --- Typography primitives --- */
+.eyebrow {
+  font-size: 11px;
+  letter-spacing: var(--tracking-editorial);
+  text-transform: uppercase;
+  color: var(--ink-500);
+  font-weight: 500;
+}
+.display {
+  font-family: var(--font-display);
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  color: var(--ink-100);
+  line-height: 1.02;
+}
+.metal {
+  background: linear-gradient(180deg, var(--gold-soft), var(--gold-matte));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+/* --- Glass card --- */
+.glass {
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-stroke);
+  border-radius: var(--radius-lg);
+  backdrop-filter: blur(22px) saturate(120%);
+  -webkit-backdrop-filter: blur(22px) saturate(120%);
+  box-shadow:
+    0 1px 0 var(--glass-hi) inset,
+    0 30px 80px -40px rgba(0,0,0,0.9);
+}
+
+/* --- Buttons --- */
+.btn {
+  appearance: none;
+  border: 1px solid var(--glass-stroke);
+  background: linear-gradient(180deg, var(--charcoal), var(--slate-800));
+  color: var(--ink-100);
+  font-family: var(--font-body);
+  font-size: 13px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 15px 22px;
+  border-radius: var(--radius);
+  cursor: pointer;
+  transition: transform var(--dur-fast) var(--ease-cine),
+              box-shadow var(--dur-fast) var(--ease-soft),
+              border-color var(--dur-fast) var(--ease-soft);
+}
+.btn:hover { border-color: var(--glass-hi); box-shadow: 0 16px 40px -24px rgba(0,0,0,0.9); }
+.btn:active { transform: translateY(1px) scale(0.997); }
+
+.btn-gold {
+  background: linear-gradient(180deg, var(--gold-soft), var(--gold-matte));
+  color: #1a1407;
+  border: none;
+  font-weight: 600;
+}
+.btn-gold:hover { box-shadow: 0 16px 50px -20px rgba(184,153,104,0.5); }
+
+/* --- Inputs --- */
+.field { position: relative; margin-bottom: 18px; }
+.field input {
+  width: 100%;
+  background: var(--slate-900);
+  border: 1px solid var(--glass-stroke);
+  border-radius: var(--radius);
+  color: var(--ink-100);
+  font-size: 15px;
+  padding: 18px 16px 8px;
+  outline: none;
+  transition: border-color var(--dur-fast) var(--ease-soft);
+}
+.field input:focus { border-color: var(--gold-matte); }
+.field label {
+  position: absolute;
+  left: 16px;
+  top: 16px;
+  font-size: 14px;
+  color: var(--ink-500);
+  pointer-events: none;
+  transition: all var(--dur-fast) var(--ease-cine);
+}
+.field input:focus + label,
+.field input:not(:placeholder-shown) + label {
+  top: 7px;
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--gold-soft);
+}
+
+/* --- Cinematic page enter --- */
+@keyframes cine-in {
+  from { opacity: 0; filter: blur(14px); transform: translateY(14px) scale(0.985); }
+  to   { opacity: 1; filter: blur(0);    transform: none; }
+}
+.cine { animation: cine-in var(--dur-slow) var(--ease-cine) both; }
+.cine-delay-1 { animation-delay: 120ms; }
+.cine-delay-2 { animation-delay: 260ms; }
+.cine-delay-3 { animation-delay: 420ms; }
+
+/* --- Rain mode (Real-Time Environment Sync) --- */
+body.weather-rain .atmosphere {
+  background:
+    radial-gradient(120% 90% at 50% -10%, #0c0e12 0%, #030304 60%),
+    radial-gradient(80% 60% at 85% 110%, #0a0c10 0%, transparent 60%);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation: none !important; transition: none !important; }
+}

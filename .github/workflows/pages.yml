@@ -1,0 +1,46 @@
+name: Deploy UI to GitHub Pages
+
+# Publishes the static frontend/ folder so the Obsidian Editorial UI
+# can be viewed live in a browser.
+#
+# ONE-TIME SETUP (repo owner): Settings -> Pages -> Build and deployment
+#   -> Source: "GitHub Actions". After that this workflow handles the rest.
+
+on:
+  push:
+    branches:
+      - main
+      - feature/obsidian-ui-scaffold
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# Allow one concurrent deployment; cancel in-progress runs.
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Configure Pages
+        uses: actions/configure-pages@v5
+
+      - name: Upload static frontend
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: frontend
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

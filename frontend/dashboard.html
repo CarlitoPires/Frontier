@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>FRONTIER · Dashboard</title>
+  <link rel="stylesheet" href="css/obsidian.css" />
+  <link rel="stylesheet" href="css/dashboard.css" />
+</head>
+<body>
+  <div class="atmosphere"></div>
+  <canvas id="rain-canvas" class="rain-canvas" aria-hidden="true"></canvas>
+
+  <!-- Top bar -->
+  <header class="topbar cine">
+    <div class="brand-mini display">FRONTIER</div>
+    <nav class="topnav">
+      <button class="nav-item active">Overview</button>
+      <button class="nav-item">Itinerary</button>
+      <button class="nav-item">Certifications</button>
+    </nav>
+    <div class="citizen-chip">
+      <div class="citizen-avatar">CP</div>
+      <div>
+        <div class="citizen-name">Carlito Pires</div>
+        <div class="eyebrow citizen-tier" id="tier-label">Base Citizen</div>
+      </div>
+    </div>
+  </header>
+
+  <main class="dash-grid">
+
+    <!-- City status / environment sync -->
+    <section class="card glass city-card cine cine-delay-1">
+      <div class="city-head">
+        <div>
+          <p class="eyebrow">Active Citizenship</p>
+          <h1 class="display city-name" id="city-name">London</h1>
+        </div>
+        <div class="weather-pill" id="weather-pill">
+          <span class="weather-icon" id="weather-icon">◐</span>
+          <span id="weather-text">Loading environment…</span>
+        </div>
+      </div>
+      <div class="progress-rail">
+        <div class="progress-meta">
+          <span class="eyebrow">Block 04 · Module 11 / 500</span>
+          <span class="metal" id="progress-pct">—</span>
+        </div>
+        <div class="rail"><div class="rail-fill" id="rail-fill"></div></div>
+      </div>
+      <button class="btn btn-gold" id="resume-btn" style="margin-top:24px">Resume Simulation</button>
+    </section>
+
+    <!-- Radar — Performance Analytics -->
+    <section class="card glass radar-card cine cine-delay-2">
+      <p class="eyebrow">Performance Analytics</p>
+      <h2 class="display radar-title">Fluency Profile</h2>
+      <canvas id="radar" width="420" height="420" role="img"
+              aria-label="Radar chart of fluency metrics"></canvas>
+      <ul class="radar-legend" id="radar-legend"></ul>
+    </section>
+
+    <!-- Module loop preview -->
+    <section class="card glass loop-card cine cine-delay-2">
+      <p class="eyebrow">Current Module Loop</p>
+      <h2 class="display loop-title">Customs Control</h2>
+      <div class="loop-steps">
+        <div class="loop-step done"><span>01</span> Action — Approach the officer</div>
+        <div class="loop-step active"><span>02</span> Obstacle — Hostile officer, accent</div>
+        <div class="loop-step"><span>03</span> Consequence — Entry stamp / rejection</div>
+      </div>
+      <div class="hud-tools">
+        <span class="hud-tool">Mental Translation</span>
+        <span class="hud-tool">Earpiece</span>
+        <span class="hud-tool gold">Free Flight +XP</span>
+      </div>
+    </section>
+
+    <!-- Citizenship hierarchy / hard gate -->
+    <section class="card glass gate-card cine cine-delay-3">
+      <p class="eyebrow">Citizenship Hierarchy</p>
+      <h2 class="display gate-title">Conquer the Next Capital</h2>
+      <ul class="gate-list" id="gate-list"></ul>
+    </section>
+
+  </main>
+
+  <script src="js/radar.js"></script>
+  <script src="js/dashboard.js"></script>
+</body>
+</html>

@@ -1,0 +1,247 @@
+/* ============================================================
+   In-Simulation NPC Dialogue HUD — "Obsidian Editorial"
+   Cinematic, responsive, Quiet Luxury. No cartoon bounce.
+   ============================================================ */
+
+.sim-body { overflow: hidden; }
+
+/* ---------- Cinematic NPC stage (light + presence, not a sprite) ---------- */
+.stage { position: fixed; inset: 0; z-index: -1; overflow: hidden; }
+.stage-aura {
+  position: absolute; left: 50%; top: 30%;
+  width: 70vmin; height: 70vmin; transform: translate(-50%, -50%);
+  background: radial-gradient(circle, rgba(184,153,104,0.16), transparent 62%);
+  filter: blur(14px);
+  transition: background var(--dur-slow) var(--ease-cine), transform var(--dur-slow) var(--ease-cine);
+  animation: breathe 7s var(--ease-soft) infinite;
+}
+@keyframes breathe {
+  0%, 100% { transform: translate(-50%, -50%) scale(1); opacity: 0.85; }
+  50%      { transform: translate(-50%, -52%) scale(1.05); opacity: 1; }
+}
+.stage-figure {
+  position: absolute; left: 50%; top: 16%;
+  width: 34vmin; height: 60vmin; transform: translateX(-50%);
+  background: linear-gradient(180deg, rgba(40,42,48,0.55), transparent 78%);
+  border-radius: 48% 48% 0 0 / 60% 60% 0 0;
+  filter: blur(2px);
+  mask-image: linear-gradient(180deg, #000 40%, transparent);
+  -webkit-mask-image: linear-gradient(180deg, #000 40%, transparent);
+}
+.stage-fog {
+  position: absolute; inset: 0;
+  background: radial-gradient(120% 80% at 50% 120%, rgba(5,5,6,0.95), transparent 55%);
+}
+
+/* mood-driven aura tints (set via body class) */
+.sim-body.mood-hostile  .stage-aura { background: radial-gradient(circle, rgba(184,116,79,0.20), transparent 62%); }
+.sim-body.mood-pleased  .stage-aura { background: radial-gradient(circle, rgba(111,143,106,0.20), transparent 62%); }
+
+/* ---------- HUD layout ---------- */
+.hud {
+  position: relative;
+  min-height: 100vh; min-height: 100dvh;
+  max-width: 720px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  padding: max(22px, env(safe-area-inset-top)) 20px max(22px, env(safe-area-inset-bottom));
+  gap: 18px;
+}
+
+/* ---------- Scene bar ---------- */
+.scene-bar { display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: 16px; }
+.scene-exit {
+  width: 42px; height: 42px; border-radius: 12px;
+  background: var(--glass-bg); border: 1px solid var(--glass-stroke);
+  color: var(--ink-300); font-size: 18px; cursor: pointer;
+  backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
+  transition: border-color var(--dur-fast) var(--ease-soft), color var(--dur-fast) var(--ease-soft);
+}
+.scene-exit:hover { color: var(--ink-100); border-color: var(--glass-hi); }
+.scene-title { font-size: 20px; margin-top: 2px; }
+
+.scene-meters { display: flex; gap: 14px; }
+.meter { display: flex; flex-direction: column; gap: 6px; width: 88px; }
+.meter-label { font-size: 9px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--ink-500); }
+.meter-rail { height: 5px; border-radius: 99px; background: var(--slate-700); overflow: hidden; }
+.meter-fill { height: 100%; width: 100%; border-radius: 99px; transition: width var(--dur-mid) var(--ease-cine), background var(--dur-mid) var(--ease-soft); }
+.meter-fill.patience { background: linear-gradient(90deg, var(--gold-matte), var(--gold-soft)); }
+.meter-fill.patience.low { background: linear-gradient(90deg, #8a3f2c, var(--signal-warn)); }
+.meter-fill.noise { background: linear-gradient(90deg, var(--graphite), var(--silver-matte)); }
+
+/* ---------- NPC dialogue ---------- */
+.dialogue { margin-top: auto; }
+.npc-id { display: flex; align-items: center; gap: 12px; margin-bottom: 16px; }
+.npc-avatar {
+  width: 44px; height: 44px; border-radius: 50%;
+  display: grid; place-items: center;
+  background: linear-gradient(180deg, var(--graphite), var(--charcoal));
+  color: var(--silver-soft); font-size: 13px; font-weight: 700;
+  border: 1px solid var(--glass-stroke);
+}
+.npc-name { font-size: 15px; color: var(--ink-100); font-family: var(--font-display); }
+.npc-mood { font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--signal-warn); margin-top: 2px; transition: color var(--dur-mid); }
+
+.npc-line {
+  width: 100%; text-align: left; cursor: pointer;
+  background: var(--glass-bg); border: 1px solid var(--glass-stroke);
+  border-left: 2px solid var(--gold-matte);
+  border-radius: var(--radius); padding: 20px 22px;
+  backdrop-filter: blur(18px); -webkit-backdrop-filter: blur(18px);
+  transition: border-color var(--dur-fast) var(--ease-soft), transform var(--dur-fast) var(--ease-cine);
+}
+.npc-line:hover { border-left-color: var(--gold-soft); }
+.npc-line:active { transform: scale(0.995); }
+.npc-text {
+  display: block; font-family: var(--font-display); font-weight: 500;
+  font-size: clamp(20px, 5vw, 26px); line-height: 1.32; color: var(--ink-100);
+  letter-spacing: -0.01em;
+}
+.npc-translation {
+  display: block; max-height: 0; opacity: 0; overflow: hidden;
+  font-size: 15px; color: var(--gold-soft); font-style: italic;
+  transition: max-height var(--dur-mid) var(--ease-cine), opacity var(--dur-mid) var(--ease-soft), margin var(--dur-mid);
+}
+.npc-line.revealed .npc-translation { max-height: 90px; opacity: 1; margin-top: 12px; }
+.tap-hint { display: block; margin-top: 12px; font-size: 10px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--ink-700); }
+.npc-line.revealed .tap-hint { display: none; }
+
+/* speaking shimmer while NPC "talks" */
+.npc-line.speaking .npc-text {
+  background: linear-gradient(90deg, var(--ink-500) 0%, var(--ink-100) 30%, var(--ink-500) 60%);
+  background-size: 250% 100%;
+  -webkit-background-clip: text; background-clip: text; color: transparent;
+  animation: talk-shimmer 1.6s var(--ease-soft) infinite;
+}
+@keyframes talk-shimmer { to { background-position: -250% 0; } }
+
+/* ---------- Survival panel ---------- */
+.panel {
+  background: var(--glass-bg); border: 1px solid var(--glass-stroke);
+  border-radius: var(--radius-lg); padding: 18px;
+  backdrop-filter: blur(22px) saturate(120%); -webkit-backdrop-filter: blur(22px) saturate(120%);
+  box-shadow: 0 1px 0 var(--glass-hi) inset, 0 -30px 80px -50px rgba(0,0,0,0.9);
+}
+
+/* Earpiece */
+.earpiece {
+  display: flex; align-items: center; gap: 10px;
+  background: var(--slate-900); border: 1px solid var(--glass-stroke);
+  border-radius: var(--radius); padding: 11px 14px; margin-bottom: 14px;
+  animation: cine-in var(--dur-mid) var(--ease-cine) both;
+}
+.earpiece-icon { color: var(--silver-soft); font-size: 14px; animation: breathe 3s infinite; }
+.earpiece-text { font-size: 13px; color: var(--silver-soft); font-style: italic; }
+.earpiece-text b { color: var(--ink-100); font-style: normal; letter-spacing: 0.04em; }
+
+/* Teleprompter */
+.tp-modes { display: inline-flex; gap: 4px; padding: 4px; background: var(--slate-900); border-radius: 12px; border: 1px solid var(--glass-stroke); }
+.tp-mode {
+  background: none; border: none; cursor: pointer;
+  font-family: var(--font-body); font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase;
+  color: var(--ink-500); padding: 8px 14px; border-radius: 9px;
+  transition: color var(--dur-fast) var(--ease-soft), background var(--dur-fast) var(--ease-soft);
+}
+.tp-mode:hover { color: var(--ink-300); }
+.tp-mode.active { color: var(--ink-100); background: var(--slate-700); }
+.tp-mode.gold.active { color: #1a1407; background: linear-gradient(180deg, var(--gold-soft), var(--gold-matte)); }
+
+.tp-script { margin-top: 14px; }
+.tp-prefix { font-size: 10px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--ink-700); display: block; margin-bottom: 5px; }
+.tp-text { font-size: clamp(16px, 4.4vw, 19px); color: var(--ink-100); line-height: 1.4; }
+.tp-freeflight { margin-top: 14px; display: flex; align-items: center; justify-content: space-between; }
+.ff-label { font-size: 14px; color: var(--ink-500); font-style: italic; }
+.ff-xp { font-size: 12px; letter-spacing: 0.1em; color: var(--gold-soft); border: 1px solid var(--gold-matte); border-radius: 99px; padding: 4px 10px; }
+
+/* Controls */
+.controls { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 12px; margin-top: 20px; }
+.ctl {
+  display: inline-flex; align-items: center; gap: 8px; justify-self: center;
+  background: var(--slate-900); border: 1px solid var(--glass-stroke);
+  color: var(--ink-300); cursor: pointer;
+  font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase;
+  padding: 11px 16px; border-radius: 99px;
+  transition: border-color var(--dur-fast) var(--ease-soft), color var(--dur-fast) var(--ease-soft);
+}
+.ctl:hover { color: var(--ink-100); border-color: var(--glass-hi); }
+.ctl-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--ink-700); transition: background var(--dur-fast), box-shadow var(--dur-fast); }
+.ctl-dot.silver { background: var(--silver-matte); }
+.ctl[aria-pressed="true"] { color: var(--ink-100); border-color: var(--gold-matte); }
+.ctl[aria-pressed="true"] .ctl-dot { background: var(--gold-soft); box-shadow: 0 0 12px var(--gold-soft); }
+
+/* Mic */
+.mic {
+  position: relative; width: 78px; height: 78px; border-radius: 50%;
+  background: linear-gradient(180deg, var(--charcoal), var(--slate-800));
+  border: 1px solid var(--glass-stroke); cursor: pointer; color: var(--silver-soft);
+  display: grid; place-items: center;
+  transition: transform var(--dur-fast) var(--ease-cine), border-color var(--dur-fast);
+  touch-action: none;
+}
+.mic:hover { border-color: var(--glass-hi); }
+.mic-core { display: grid; place-items: center; transition: color var(--dur-fast); }
+.mic-ring { position: absolute; inset: -3px; border-radius: 50%; border: 1px solid transparent; }
+.mic-wave { position: absolute; inset: 0; border-radius: 50%; pointer-events: none; }
+
+.mic.listening { transform: scale(1.04); color: var(--gold-soft); border-color: var(--gold-matte); }
+.mic.listening .mic-ring { animation: mic-pulse 1.4s var(--ease-soft) infinite; border-color: var(--gold-matte); }
+@keyframes mic-pulse {
+  0%   { box-shadow: 0 0 0 0 rgba(205,178,135,0.35); }
+  100% { box-shadow: 0 0 0 22px rgba(205,178,135,0); }
+}
+.mic.listening .mic-wave {
+  background: repeating-radial-gradient(circle at 50% 50%, rgba(205,178,135,0.12) 0 2px, transparent 2px 7px);
+  animation: mic-rings 1.4s linear infinite;
+}
+@keyframes mic-rings { to { transform: scale(1.25); opacity: 0; } }
+
+.mic-hint { text-align: center; font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--ink-700); margin-top: 12px; }
+
+/* ---------- Consequence overlay ---------- */
+.consequence {
+  position: fixed; inset: 0; z-index: 60; display: grid; place-items: center;
+  background: rgba(3,3,4,0.84); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+  opacity: 0; pointer-events: none; transition: opacity var(--dur-mid) var(--ease-cine);
+  padding: 24px;
+}
+.consequence.active { opacity: 1; pointer-events: auto; }
+.conseq-card { width: 100%; max-width: 420px; padding: 36px; text-align: center; }
+.conseq-title { font-size: 30px; margin: 8px 0 14px; }
+.conseq-body { font-size: 15px; line-height: 1.55; color: var(--ink-300); margin-bottom: 22px; }
+.conseq-scores { display: flex; gap: 10px; justify-content: center; margin-bottom: 26px; flex-wrap: wrap; }
+.score-chip { border: 1px solid var(--glass-stroke); border-radius: 99px; padding: 8px 14px; font-size: 12px; color: var(--ink-300); }
+.score-chip b { color: var(--gold-soft); font-variant-numeric: tabular-nums; }
+
+/* Passport stamp slam-in */
+.stamp {
+  width: 132px; height: 132px; margin: 0 auto 22px;
+  border: 3px solid var(--gold-matte); border-radius: 50%;
+  display: grid; place-items: center; transform: rotate(-14deg) scale(2.4);
+  opacity: 0; color: var(--gold-soft); font-size: 15px; letter-spacing: 0.18em;
+  position: relative;
+}
+.stamp::before { content: ""; position: absolute; inset: 9px; border: 1px dashed var(--gold-matte); border-radius: 50%; opacity: 0.6; }
+.consequence.active .stamp { animation: stamp-slam 600ms var(--ease-cine) 240ms forwards; }
+@keyframes stamp-slam {
+  0%   { transform: rotate(-14deg) scale(2.4); opacity: 0; }
+  60%  { opacity: 1; }
+  100% { transform: rotate(-14deg) scale(1); opacity: 0.92; }
+}
+.consequence.rejected .stamp { border-color: var(--signal-warn); color: var(--signal-warn); }
+.consequence.rejected .stamp::before { border-color: var(--signal-warn); }
+
+/* ---------- Responsive ---------- */
+@media (min-width: 760px) {
+  .hud { padding-left: 32px; padding-right: 32px; }
+  .scene-title { font-size: 24px; }
+}
+@media (max-width: 380px) {
+  .scene-meters { gap: 8px; }
+  .meter { width: 66px; }
+  .ctl { padding: 10px 12px; }
+}
+@media (max-height: 680px) {
+  .npc-text { font-size: 20px; }
+  .stage-figure { display: none; }
+}
