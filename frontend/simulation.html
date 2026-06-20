@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>FRONTIER · Customs Control</title>
+  <link rel="stylesheet" href="css/obsidian.css" />
+  <link rel="stylesheet" href="css/hud.css" />
+</head>
+<body class="sim-body mood-hostile">
+  <div class="atmosphere"></div>
+
+  <!-- Cinematic NPC stage: the officer is presence + light, not a cartoon -->
+  <div class="stage" id="stage" aria-hidden="true">
+    <div class="stage-aura" id="stage-aura"></div>
+    <div class="stage-figure"></div>
+    <div class="stage-fog"></div>
+  </div>
+
+  <main class="hud">
+
+    <!-- ===== Scene bar ===== -->
+    <header class="scene-bar cine">
+      <button class="scene-exit" id="exit-btn" aria-label="Leave simulation">&#8592;</button>
+      <div class="scene-meta">
+        <p class="eyebrow">London · Block 04 · Module 11</p>
+        <h1 class="display scene-title">Customs Control</h1>
+      </div>
+      <div class="scene-meters">
+        <div class="meter" title="NPC patience — runs out if you hesitate">
+          <span class="meter-label">Patience</span>
+          <div class="meter-rail"><div class="meter-fill patience" id="patience-fill"></div></div>
+        </div>
+        <div class="meter" title="Ambient noise degrades NPC comprehension">
+          <span class="meter-label">Noise</span>
+          <div class="meter-rail"><div class="meter-fill noise" id="noise-fill"></div></div>
+        </div>
+      </div>
+    </header>
+
+    <!-- ===== NPC dialogue (tap to translate) ===== -->
+    <section class="dialogue cine cine-delay-1">
+      <div class="npc-id">
+        <span class="npc-avatar" id="npc-avatar">BO</span>
+        <div>
+          <div class="npc-name" id="npc-name">Border Officer</div>
+          <div class="npc-mood" id="npc-mood">Impatient · Formal</div>
+        </div>
+      </div>
+
+      <button class="npc-line" id="npc-line" aria-label="Tap to reveal translation">
+        <span class="npc-text" id="npc-text"></span>
+        <span class="npc-translation" id="npc-translation"></span>
+        <span class="tap-hint" id="tap-hint">Tap for Mental Translation</span>
+      </button>
+    </section>
+
+    <!-- ===== Survival Panel ===== -->
+    <section class="panel cine cine-delay-2">
+
+      <!-- Earpiece strip (Ponto Eletrônico) -->
+      <div class="earpiece" id="earpiece" hidden>
+        <span class="earpiece-icon">&#9685;</span>
+        <span class="earpiece-text" id="earpiece-text">…</span>
+      </div>
+
+      <!-- 3-Way Teleprompter -->
+      <div class="teleprompter">
+        <div class="tp-modes" role="tablist" aria-label="Teleprompter mode">
+          <button class="tp-mode active" data-mode="basic" role="tab">Basic</button>
+          <button class="tp-mode" data-mode="fluent" role="tab">Fluent</button>
+          <button class="tp-mode gold" data-mode="free" role="tab">Free Flight</button>
+        </div>
+        <div class="tp-script" id="tp-script">
+          <span class="tp-prefix">Say</span>
+          <span class="tp-text" id="tp-text"></span>
+        </div>
+        <div class="tp-freeflight" id="tp-freeflight" hidden>
+          <span class="ff-label">Open mic · No script</span>
+          <span class="ff-xp">+40% XP</span>
+        </div>
+      </div>
+
+      <!-- Controls -->
+      <div class="controls">
+        <button class="ctl" id="earpiece-btn" aria-pressed="false">
+          <span class="ctl-dot"></span> Earpiece
+        </button>
+
+        <button class="mic" id="mic-btn" aria-label="Hold to speak">
+          <span class="mic-ring"></span>
+          <span class="mic-core">
+            <svg viewBox="0 0 24 24" width="26" height="26" aria-hidden="true">
+              <path d="M12 14a3 3 0 0 0 3-3V6a3 3 0 1 0-6 0v5a3 3 0 0 0 3 3z" fill="currentColor"/>
+              <path d="M18 11a6 6 0 0 1-12 0M12 17v3" stroke="currentColor" stroke-width="1.6" fill="none" stroke-linecap="round"/>
+            </svg>
+          </span>
+          <span class="mic-wave" id="mic-wave"></span>
+        </button>
+
+        <button class="ctl" id="translate-btn">
+          <span class="ctl-dot silver"></span> Translate
+        </button>
+      </div>
+      <p class="mic-hint" id="mic-hint">Hold the mic to respond</p>
+    </section>
+  </main>
+
+  <!-- ===== Consequence / Feedback overlay ===== -->
+  <div class="consequence" id="consequence" aria-hidden="true">
+    <div class="conseq-card glass">
+      <div class="stamp" id="stamp">
+        <span class="stamp-text" id="stamp-text">ADMITTED</span>
+      </div>
+      <p class="eyebrow" id="conseq-label">Consequence</p>
+      <h2 class="display conseq-title" id="conseq-title">Entry Granted</h2>
+      <p class="conseq-body" id="conseq-body"></p>
+      <div class="conseq-scores" id="conseq-scores"></div>
+      <button class="btn btn-gold" id="conseq-continue" style="width:100%;margin-top:8px">Continue</button>
+    </div>
+  </div>
+
+  <script src="js/hud.js"></script>
+</body>
+</html>
