@@ -33,19 +33,19 @@
     overlay.classList.add("active");
     overlay.setAttribute("aria-hidden", "false");
 
-    const steps = [
-      "Alinhando geometria facial…",
-      "Mapeando 30.000 pontos de referência…",
-      "Verificando vivacidade…",
-      "Confrontando identidade do cidadão…",
+    const stepKeys = [
+      "auth.faceStep1",
+      "auth.faceStep2",
+      "auth.faceStep3",
+      "auth.faceStep4",
     ];
-    for (const s of steps) {
-      status.textContent = s;
+    for (const key of stepKeys) {
+      status.textContent = I18n.t(key);   // read at display time -> respects current language
       await wait(820);
     }
 
     overlay.classList.add("success");
-    status.textContent = "Identidade confirmada";
+    status.textContent = I18n.t("auth.faceConfirmed");
     await wait(900);
     goToDashboard();
   });

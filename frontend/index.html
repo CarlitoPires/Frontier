@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="pt-BR" data-i18n-doctitle="doc.authTitle">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -10,50 +10,57 @@
 <body>
   <div class="atmosphere"></div>
 
+  <!-- Language toggle (EN / PT-BR) -->
+  <div class="lang-toggle auth-lang" role="group" aria-label="Language / Idioma">
+    <button type="button" data-set-lang="pt-BR">PT</button>
+    <button type="button" data-set-lang="en">EN</button>
+  </div>
+
   <main class="auth-shell">
     <!-- Brand column -->
     <section class="auth-brand cine">
-      <p class="eyebrow">Simulador social da vida real</p>
+      <p class="eyebrow" data-i18n="auth.eyebrow">Real-Life Social Simulator</p>
       <h1 class="display auth-wordmark">FRONTIER</h1>
-      <p class="auth-tagline">
-        Você não compra cidades. Você <span class="metal">conquista</span> o direito de viver nelas.
+      <p class="auth-tagline" data-i18n-html="auth.tagline">
+        You do not buy cities. You <span class="metal">conquer</span> the right to live in them.
       </p>
       <div class="passport-stamp" aria-hidden="true">
-        <span class="stamp-top">ENTRADA</span>
-        <span class="stamp-bottom">· VISTO ·</span>
+        <span class="stamp-top" data-i18n="auth.stampTop">ENTRY</span>
+        <span class="stamp-bottom" data-i18n="auth.stampBottom">· VISA ·</span>
       </div>
     </section>
 
     <!-- Access column -->
     <section class="auth-card glass cine cine-delay-1">
       <header class="auth-head">
-        <p class="eyebrow">Acesso Seguro</p>
-        <h2 class="display" style="font-size:26px">Login de Cidadão</h2>
+        <p class="eyebrow" data-i18n="auth.secureAccess">Secure Access</p>
+        <h2 class="display" style="font-size:26px" data-i18n="auth.citizenLogin">Citizen Login</h2>
       </header>
 
       <form id="login-form" autocomplete="off" novalidate>
         <div class="field">
           <input type="email" id="email" placeholder=" " required />
-          <label for="email">E-mail</label>
+          <label for="email" data-i18n="auth.email">Email</label>
         </div>
         <div class="field">
           <input type="password" id="password" placeholder=" " required />
-          <label for="password">Senha</label>
+          <label for="password" data-i18n="auth.passphrase">Passphrase</label>
         </div>
 
-        <button type="submit" class="btn btn-gold" style="width:100%; margin-top:6px">
-          Entrar na cidade
+        <button type="submit" class="btn btn-gold" style="width:100%; margin-top:6px" data-i18n="auth.enterCity">
+          Enter the City
         </button>
 
-        <div class="auth-divider"><span>ou</span></div>
+        <div class="auth-divider"><span data-i18n="auth.or">or</span></div>
 
         <button type="button" id="biometric-btn" class="btn" style="width:100%">
-          <span class="bio-dot"></span> Autenticar com FaceID
+          <span class="bio-dot"></span> <span data-i18n="auth.faceId">Authenticate with FaceID</span>
         </button>
       </form>
 
       <p class="auth-foot">
-        Ainda não tem cidadania? <a href="#" class="metal">Solicite visto de entrada</a>
+        <span data-i18n="auth.noCitizenship">No citizenship yet?</span>
+        <a href="#" class="metal" data-i18n="auth.requestVisa">Request entry visa</a>
       </p>
     </section>
   </main>
@@ -72,9 +79,10 @@
       <div class="bio-scanline"></div>
       <div class="bio-ring"></div>
     </div>
-    <p id="bio-status" class="eyebrow bio-status">Alinhando geometria facial…</p>
+    <p id="bio-status" class="eyebrow bio-status" data-i18n="auth.faceStep1">Aligning facial geometry…</p>
   </div>
 
+  <script src="js/i18n.js"></script>
   <script src="js/auth.js"></script>
 </body>
 </html>

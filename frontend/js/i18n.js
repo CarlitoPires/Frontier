@@ -31,6 +31,27 @@
       /* document titles */
       "doc.dashTitle": "FRONTIER · Dashboard",
       "doc.simTitle": "FRONTIER · Customs Control",
+      "doc.authTitle": "FRONTIER · Access",
+
+      /* landing / authentication */
+      "auth.eyebrow": "Real-Life Social Simulator",
+      "auth.tagline": "You do not buy cities. You <span class=\"metal\">conquer</span> the right to live in them.",
+      "auth.stampTop": "ENTRY",
+      "auth.stampBottom": "· VISA ·",
+      "auth.secureAccess": "Secure Access",
+      "auth.citizenLogin": "Citizen Login",
+      "auth.email": "Email",
+      "auth.passphrase": "Passphrase",
+      "auth.enterCity": "Enter the City",
+      "auth.or": "or",
+      "auth.faceId": "Authenticate with FaceID",
+      "auth.noCitizenship": "No citizenship yet?",
+      "auth.requestVisa": "Request entry visa",
+      "auth.faceStep1": "Aligning facial geometry…",
+      "auth.faceStep2": "Mapping 30,000 reference points…",
+      "auth.faceStep3": "Verifying liveness…",
+      "auth.faceStep4": "Matching citizen identity…",
+      "auth.faceConfirmed": "Identity confirmed",
 
       /* dashboard chrome */
       "nav.overview": "Overview",
@@ -130,6 +151,27 @@
       /* document titles */
       "doc.dashTitle": "FRONTIER · Painel",
       "doc.simTitle": "FRONTIER · Controle Alfandegário",
+      "doc.authTitle": "FRONTIER · Acesso",
+
+      /* landing / authentication */
+      "auth.eyebrow": "Simulador social da vida real",
+      "auth.tagline": "Você não compra cidades. Você <span class=\"metal\">conquista</span> o direito de viver nelas.",
+      "auth.stampTop": "ENTRADA",
+      "auth.stampBottom": "· VISTO ·",
+      "auth.secureAccess": "Acesso Seguro",
+      "auth.citizenLogin": "Login de Cidadão",
+      "auth.email": "E-mail",
+      "auth.passphrase": "Senha",
+      "auth.enterCity": "Entrar na cidade",
+      "auth.or": "ou",
+      "auth.faceId": "Autenticar com FaceID",
+      "auth.noCitizenship": "Ainda não tem cidadania?",
+      "auth.requestVisa": "Solicite visto de entrada",
+      "auth.faceStep1": "Alinhando geometria facial…",
+      "auth.faceStep2": "Mapeando 30.000 pontos de referência…",
+      "auth.faceStep3": "Verificando vivacidade…",
+      "auth.faceStep4": "Confrontando identidade do cidadão…",
+      "auth.faceConfirmed": "Identidade confirmada",
 
       /* dashboard chrome */
       "nav.overview": "Visão Geral",
@@ -265,6 +307,12 @@
 
     root.querySelectorAll("[data-i18n]").forEach(function (node) {
       node.textContent = t(node.getAttribute("data-i18n"));
+    });
+
+    // Rich strings that contain inline markup (e.g. a <span> accent).
+    // Values come only from our own dictionary, so innerHTML is safe here.
+    root.querySelectorAll("[data-i18n-html]").forEach(function (node) {
+      node.innerHTML = t(node.getAttribute("data-i18n-html"));
     });
 
     Object.keys(ATTR_BINDINGS).forEach(function (dataAttr) {

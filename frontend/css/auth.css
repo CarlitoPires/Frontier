@@ -13,6 +13,14 @@
   padding: 48px 40px;
 }
 
+/* Language toggle pinned to the top-right of the landing page */
+.auth-lang {
+  position: fixed;
+  top: 22px;
+  right: 24px;
+  z-index: 10;
+}
+
 /* --- Brand column --- */
 .auth-wordmark {
   font-size: clamp(56px, 9vw, 120px);
