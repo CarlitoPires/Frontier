@@ -4,7 +4,10 @@
 function drawRadar(canvas, data, opts) {
   const ctx = canvas.getContext("2d");
   const dpr = window.devicePixelRatio || 1;
-  const size = canvas.width;
+  // Cache the logical (CSS) size on first call. Without this, re-rendering
+  // (e.g. on language change) would re-read the already-scaled canvas.width
+  // and the chart would grow on every redraw.
+  const size = canvas.__logicalSize || (canvas.__logicalSize = canvas.width);
   canvas.width = size * dpr;
   canvas.height = size * dpr;
   canvas.style.width = size + "px";

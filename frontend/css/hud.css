@@ -61,6 +61,7 @@
 .scene-exit:hover { color: var(--ink-100); border-color: var(--glass-hi); }
 .scene-title { font-size: 20px; margin-top: 2px; }
 
+.scene-right { display: flex; align-items: center; gap: 14px; }
 .scene-meters { display: flex; gap: 14px; }
 .meter { display: flex; flex-direction: column; gap: 6px; width: 88px; }
 .meter-label { font-size: 9px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--ink-500); }

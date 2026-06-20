@@ -2,6 +2,7 @@
    - Renders fluency radar
    - Builds citizenship hierarchy (hard-gate states)
    - Real-Time Environment Sync (weather -> atmosphere + rain SFX/visual)
+   - Fully localized via I18n; re-renders on "i18n:change".
    In production, replace MOCK with fetch('/api/citizen/me') etc. */
 
 (function () {
@@ -11,75 +12,97 @@
   const CITIZEN = {
     name: "Carlito Pires",
     tier: "BASE",                       // BASE | GLOBAL
-    activeCity: "London",
+    activeCity: "London",               // canonical (English) key -> I18n "city.*"
     completedModules: 11,
+    currentBlock: "04",
     totalModules: 500,
+    // value = score; key = I18n label key
     fluency: [
-      { label: "Fluency",     value: 62 },
-      { label: "Vocabulary",  value: 74 },
-      { label: "Confidence",  value: 48 },
-      { label: "Reaction",    value: 55 },
-      { label: "Listening",   value: 68 },
-      { label: "Pronunciation", value: 51 },
+      { key: "radar.fluency",       value: 62 },
+      { key: "radar.vocabulary",    value: 74 },
+      { key: "radar.confidence",    value: 48 },
+      { key: "radar.reaction",      value: 55 },
+      { key: "radar.listening",     value: 68 },
+      { key: "radar.pronunciation", value: 51 },
     ],
     hierarchy: [
-      { city: "London",  state: "current"  },
-      { city: "Berlin",  state: "locked"   },
-      { city: "Madrid",  state: "locked"   },
-      { city: "New York",state: "locked"   },
+      { city: "London",   state: "current"  },
+      { city: "Berlin",   state: "locked"   },
+      { city: "Madrid",   state: "locked"   },
+      { city: "New York", state: "locked"   },
     ],
   };
 
-  /* ---------- Radar ---------- */
-  drawRadar(document.getElementById("radar"), CITIZEN.fluency, { rings: 4 });
-  const legend = document.getElementById("radar-legend");
-  legend.innerHTML = CITIZEN.fluency
-    .map((d) => `<li><span>${d.label}</span><span class="val">${d.value}</span></li>`)
-    .join("");
+  // Demo weather feed. In production: fetch a weather API for activeCity.
+  const MOCK_WEATHER = { condition: "rain", labelKey: "weather.rain", icon: "☔" };
 
-  /* ---------- Progress ---------- */
-  const pct = Math.round((CITIZEN.completedModules / CITIZEN.totalModules) * 100);
-  document.getElementById("rail-fill").style.width = pct + "%";
-  document.getElementById("progress-pct").textContent = pct + "%";
-  document.getElementById("city-name").textContent = CITIZEN.activeCity;
-  document.getElementById("tier-label").textContent =
-    CITIZEN.tier === "GLOBAL" ? "Global Citizen" : "Base Citizen";
-
-  /* ---------- Citizenship hierarchy (hard gate) ---------- */
-  const gate = document.getElementById("gate-list");
-  const STATE_LABEL = {
-    unlocked: "Conquered",
-    current:  "In Progress",
-    locked:   "Locked · Earn Certification",
+  const STATE_KEY = {
+    unlocked: "state.conquered",
+    current:  "state.inProgress",
+    locked:   "state.locked",
   };
   const STATE_ICON = { unlocked: "✓", current: "●", locked: "✕" };
-  gate.innerHTML = CITIZEN.hierarchy
-    .map(
-      (c) => `
-      <li class="gate-node ${c.state}">
-        <span class="gate-lock">${STATE_ICON[c.state]}</span>
-        <div class="gate-city">${c.city}</div>
-        <div class="gate-state">${STATE_LABEL[c.state]}</div>
-      </li>`
-    )
-    .join("");
 
-  /* ---------- Real-Time Environment Sync ---------- */
-  // Demo weather feed. In production: fetch a weather API for activeCity.
-  const MOCK_WEATHER = { condition: "rain", label: "Rain · 11°C", icon: "☔" };
+  /* ---------- Elements ---------- */
+  const el = (id) => document.getElementById(id);
+  const body = document.body;
+  const radarEl = el("radar");
+  const legendEl = el("radar-legend");
+  const gateEl = el("gate-list");
 
-  function applyWeather(w) {
-    document.getElementById("weather-text").textContent = w.label;
-    document.getElementById("weather-icon").textContent = w.icon;
-    if (w.condition === "rain") {
-      document.body.classList.add("weather-rain");
-      startRain();
-    }
+  /* ---------- Localized render helpers ---------- */
+  function fluencyData() {
+    return CITIZEN.fluency.map((f) => ({ label: I18n.t(f.key), value: f.value }));
   }
 
-  /* ---------- Cinematic rain canvas ---------- */
+  function renderRadar() {
+    drawRadar(radarEl, fluencyData(), { rings: 4 });
+    legendEl.innerHTML = fluencyData()
+      .map((d) => `<li><span>${d.label}</span><span class="val">${d.value}</span></li>`)
+      .join("");
+  }
+
+  function renderProgressAndTier() {
+    const pct = Math.round((CITIZEN.completedModules / CITIZEN.totalModules) * 100);
+    el("rail-fill").style.width = pct + "%";
+    el("progress-pct").textContent = pct + "%";
+    el("city-name").textContent = I18n.t("city." + CITIZEN.activeCity);
+    el("progress-label").textContent = I18n.t("dash.progressMeta", {
+      block: CITIZEN.currentBlock,
+      module: CITIZEN.completedModules,
+      total: CITIZEN.totalModules,
+    });
+    el("tier-label").textContent = I18n.t(CITIZEN.tier === "GLOBAL" ? "tier.global" : "tier.base");
+  }
+
+  function renderHierarchy() {
+    gateEl.innerHTML = CITIZEN.hierarchy
+      .map(
+        (c) => `
+      <li class="gate-node ${c.state}">
+        <span class="gate-lock">${STATE_ICON[c.state]}</span>
+        <div class="gate-city">${I18n.t("city." + c.city)}</div>
+        <div class="gate-state">${I18n.t(STATE_KEY[c.state])}</div>
+      </li>`
+      )
+      .join("");
+  }
+
+  function renderWeatherText() {
+    el("weather-text").textContent = I18n.t(MOCK_WEATHER.labelKey);
+    el("weather-icon").textContent = MOCK_WEATHER.icon;
+  }
+
+  function renderAll() {
+    renderRadar();
+    renderProgressAndTier();
+    renderHierarchy();
+    renderWeatherText();
+  }
+
+  /* ---------- Cinematic rain canvas (started once) ---------- */
   function startRain() {
-    const canvas = document.getElementById("rain-canvas");
+    const canvas = el("rain-canvas");
     const ctx = canvas.getContext("2d");
     let drops = [];
     function resize() {
@@ -113,13 +136,25 @@
     tick();
   }
 
-  applyWeather(MOCK_WEATHER);
+  function applyWeatherEffects() {
+    if (MOCK_WEATHER.condition === "rain") {
+      body.classList.add("weather-rain");
+      startRain();
+    }
+  }
+
+  /* ---------- Boot ---------- */
+  renderAll();
+  applyWeatherEffects();
+
+  // Re-render localized content (not the rain) when the language changes.
+  window.addEventListener("i18n:change", renderAll);
 
   /* ---------- Resume ---------- */
-  document.getElementById("resume-btn").addEventListener("click", () => {
+  el("resume-btn").addEventListener("click", () => {
     // -> launch simulation engine for next unlocked module
-    document.body.style.transition = "opacity 500ms var(--ease-cine)";
-    document.body.style.opacity = "0";
+    body.style.transition = "opacity 500ms var(--ease-cine)";
+    body.style.opacity = "0";
     setTimeout(() => (window.location.href = "simulation.html"), 460);
   });
 })();

@@ -4,12 +4,17 @@
  *
  *  Implements the PRD Survival Panel:
  *   - Mental Translation (tap NPC line)
- *   - Earpiece / Ponto Eletronico (whispered pronunciation tip,
- *     spelled with the user's native-text sounds)
+ *   - Earpiece / Ponto Eletronico (whispered pronunciation tip)
  *   - 3-Way Teleprompter: Basic | Fluent | Free Flight (+XP)
  *   - Impatient NPC: patience decays while you hesitate
  *   - Background noise degrades comprehension
  *   - Action -> Obstacle -> Consequence loop
+ *
+ *  LOCALIZATION: UI chrome & system feedback go through I18n.t and
+ *  re-render on "i18n:change". NPC LEARNING CONTENT (text / basic /
+ *  fluent — the English the user is practising) ALWAYS stays English.
+ *  The mental translation (tr) and pronunciation tip (ear) are
+ *  provided per UI language.
  *
  *  All client-side / illustrative. Real grading comes from the AI
  *  engine via POST /api/modules/:id/grade (see backend).
@@ -18,32 +23,56 @@
 (function () {
   "use strict";
 
-  /* ---------- Scene script ---------- *
-   * pron = native-text pronunciation (pt-BR speaker) per the
-   * "Reverse Engineering of Speech" mechanic.                  */
+  /* ---------- Scene script ----------
+   * text/basic/fluent: ENGLISH learning content — never translated.
+   * tr:  mental-translation into the UI language (native-language gloss).
+   * ear: pronunciation tip; instruction localized, example sounds kept. */
   const TURNS = [
     {
       text: "Passport. What is the purpose of your visit?",
-      tr: "Passaporte. Qual é o motivo da sua visita?",
-      ear: "Relax the jaw. <b>“pér-pôs”</b>, not “purpouse”.",
+      tr: {
+        "pt-BR": "Passaporte. Qual é o motivo da sua visita?",
+        en: "He's asking why you're visiting.",
+      },
+      ear: {
+        "pt-BR": "Relaxe a mandíbula. <b>“pér-pôs”</b>, não “purpouse”.",
+        en: "Relax the jaw. <b>“pur-puhs”</b>, not “purpouse”.",
+      },
       basic: "Tourism. One week.",
       fluent: "I'm here on holiday — staying about a week.",
     },
     {
       text: "Where are you staying while you're in London?",
-      tr: "Onde você vai ficar enquanto estiver em Londres?",
-      ear: "Soft ‘th’ in <b>“stay-ing”</b>; don't rush it.",
+      tr: {
+        "pt-BR": "Onde você vai ficar enquanto estiver em Londres?",
+        en: "He's asking where you'll be staying.",
+      },
+      ear: {
+        "pt-BR": "‘th’ suave em <b>“stay-ing”</b>; não tenha pressa.",
+        en: "Soft ‘th’ in <b>“stay-ing”</b>; don't rush it.",
+      },
       basic: "A hotel in Camden.",
       fluent: "At a small hotel in Camden, near the market.",
     },
     {
       text: "Do you have a return ticket?",
-      tr: "Você tem passagem de volta?",
-      ear: "<b>“ri-TÂRN”</b> — stress the second part.",
+      tr: {
+        "pt-BR": "Você tem passagem de volta?",
+        en: "He's asking if you have a ticket back.",
+      },
+      ear: {
+        "pt-BR": "<b>“ri-TÂRN”</b> — enfatize a segunda parte.",
+        en: "<b>“ri-TURN”</b> — stress the second part.",
+      },
       basic: "Yes, next Sunday.",
       fluent: "Yes — I fly back next Sunday evening.",
     },
   ];
+
+  // Pick the localized variant of a content field, falling back to EN.
+  function L(obj) {
+    return obj[I18n.getLang()] || obj.en;
+  }
 
   /* ---------- State ---------- */
   const state = {
@@ -55,6 +84,7 @@
     xp: 0,
     listening: false,
     finished: false,
+    conseq: null,     // {passed, score, xp, mode, reasonKey} for re-render
   };
 
   /* ---------- Elements ---------- */
@@ -63,7 +93,6 @@
   const npcLine = el("npc-line");
   const npcText = el("npc-text");
   const npcTrans = el("npc-translation");
-  const tapHint = el("tap-hint");
   const npcMood = el("npc-mood");
   const patienceFill = el("patience-fill");
   const noiseFill = el("noise-fill");
@@ -76,55 +105,64 @@
   const micBtn = el("mic-btn");
   const micHint = el("mic-hint");
 
+  const inBounds = () => state.turn < TURNS.length;
+  const currentTurn = () => TURNS[Math.min(state.turn, TURNS.length - 1)];
+
   /* ---------- Rendering ---------- */
+  function renderSceneMeta() {
+    el("scene-loc").textContent = I18n.t("sim.location", {
+      city: I18n.t("city.London"),
+      block: "04",
+      module: "11",
+    });
+  }
+
   function renderMeters() {
     patienceFill.style.width = state.patience + "%";
     noiseFill.style.width = state.noise + "%";
     patienceFill.classList.toggle("low", state.patience < 35);
     if (state.patience < 30) {
-      npcMood.textContent = "Losing patience";
+      npcMood.textContent = I18n.t("npc.moodLosing");
       body.classList.add("mood-hostile");
     } else if (state.patience > 70) {
-      npcMood.textContent = "Impatient · Formal";
+      npcMood.textContent = I18n.t("npc.moodImpatient");
     }
   }
 
-  function renderTurn() {
+  // Update the localized dialogue content WITHOUT the speaking shimmer
+  // (used on language change so we don't replay the animation).
+  function applyTurnContent() {
+    if (!inBounds()) return;
     const t = TURNS[state.turn];
+    npcText.textContent = t.text;          // EN learning content
+    npcTrans.textContent = L(t.tr);        // localized mental translation
+    if (state.earpiece) earpieceText.innerHTML = L(t.ear);
+    renderTeleprompter();
+  }
 
+  function renderTurn() {
     // NPC speaks (shimmer), then settles
     npcLine.classList.remove("revealed");
     npcLine.classList.add("speaking");
-    npcText.textContent = t.text;
-    npcTrans.textContent = t.tr;
-    tapHint.textContent = "Tap for Mental Translation";
+    applyTurnContent();
     setTimeout(() => npcLine.classList.remove("speaking"), 1400);
-
-    // Teleprompter
-    renderTeleprompter();
-
-    // Earpiece
-    if (state.earpiece) earpieceText.innerHTML = t.ear;
-
-    micHint.textContent = "Hold the mic to respond";
+    micHint.textContent = I18n.t("mic.hint");
   }
 
   function renderTeleprompter() {
-    const t = TURNS[state.turn];
+    const t = currentTurn();
     if (state.mode === "free") {
       tpScript.hidden = true;
       tpFree.hidden = false;
     } else {
       tpScript.hidden = false;
       tpFree.hidden = true;
-      tpText.textContent = state.mode === "fluent" ? t.fluent : t.basic;
+      tpText.textContent = state.mode === "fluent" ? t.fluent : t.basic; // EN
     }
   }
 
   /* ---------- Mental Translation ---------- */
-  npcLine.addEventListener("click", () => {
-    npcLine.classList.toggle("revealed");
-  });
+  npcLine.addEventListener("click", () => npcLine.classList.toggle("revealed"));
 
   /* ---------- Teleprompter mode switch ---------- */
   document.querySelectorAll(".tp-mode").forEach((btn) => {
@@ -141,7 +179,7 @@
     state.earpiece = !state.earpiece;
     earpieceBtn.setAttribute("aria-pressed", String(state.earpiece));
     earpiece.hidden = !state.earpiece;
-    if (state.earpiece) earpieceText.innerHTML = TURNS[state.turn].ear;
+    if (state.earpiece) earpieceText.innerHTML = L(currentTurn().ear);
   });
 
   /* ---------- Translate button (mirror of tapping the line) ---------- */
@@ -155,7 +193,7 @@
     state.noise = Math.min(72, Math.max(8, state.noise + (Math.random() - 0.5) * 9));
     if (state.noise > 55) state.patience = Math.max(0, state.patience - 0.6);
     renderMeters();
-    if (state.patience <= 0) endScene(false, "The officer waves the next traveller forward.");
+    if (state.patience <= 0) endScene(false, "conseq.reasonImpatient");
   }, 700);
 
   /* ---------- Mic / respond loop ---------- */
@@ -163,7 +201,7 @@
     if (state.finished || state.listening) return;
     state.listening = true;
     micBtn.classList.add("listening");
-    micHint.textContent = state.mode === "free" ? "Listening · Free Flight" : "Listening…";
+    micHint.textContent = I18n.t(state.mode === "free" ? "mic.listeningFree" : "mic.listening");
   }
 
   function stopListening() {
@@ -176,15 +214,14 @@
   function evaluateResponse() {
     // Illustrative scoring. Real value comes from the AI engine.
     let gain = state.mode === "free" ? 14 : state.mode === "fluent" ? 10 : 7;
-    // Noise penalty — NPC mishears in a loud hall.
-    const noisePenalty = state.noise > 50 ? 6 : 0;
-    // Earpiece slightly improves delivery.
+    const noisePenalty = state.noise > 50 ? 6 : 0;  // NPC mishears in a loud hall
     const earBonus = state.earpiece ? 4 : 0;
 
     state.patience = Math.min(100, state.patience + 12 + earBonus - noisePenalty);
     state.xp += gain * (state.mode === "free" ? 1.4 : 1);
     renderMeters();
 
+    // NPC's spoken reactions stay in English (immersion / learning).
     micHint.textContent = noisePenalty ? "“Sorry? It's loud in here.”" : "Understood.";
 
     state.turn += 1;
@@ -195,11 +232,11 @@
     }
   }
 
-  // Pointer (works for mouse + touch) — hold to talk
+  // Pointer (mouse + touch) — hold to talk
   micBtn.addEventListener("pointerdown", (e) => { e.preventDefault(); startListening(); });
   micBtn.addEventListener("pointerup", stopListening);
   micBtn.addEventListener("pointerleave", () => { if (state.listening) stopListening(); });
-  // Keyboard accessibility — space/enter toggles
+  // Keyboard accessibility
   micBtn.addEventListener("keydown", (e) => {
     if ((e.key === " " || e.key === "Enter") && !state.listening) { e.preventDefault(); startListening(); }
   });
@@ -208,33 +245,39 @@
   });
 
   /* ---------- Consequence ---------- */
-  function endScene(passed, reason) {
+  function endScene(passed, reasonKey) {
     if (state.finished) return;
     state.finished = true;
     clearInterval(decay);
 
-    const overlay = el("consequence");
     const score = Math.round(Math.min(100, 55 + state.patience * 0.4 + state.xp * 0.2));
     const passedFinal = passed && score >= 70;
 
+    state.conseq = { passedFinal: passedFinal, score: score, xp: Math.round(state.xp), reasonKey: reasonKey };
+
     body.classList.toggle("mood-pleased", passedFinal);
-    overlay.classList.toggle("rejected", !passedFinal);
+    el("consequence").classList.toggle("rejected", !passedFinal);
 
-    el("stamp-text").textContent = passedFinal ? "ADMITTED" : "DENIED";
-    el("conseq-label").textContent = passedFinal ? "Consequence · Passed" : "Consequence · Failed";
-    el("conseq-title").textContent = passedFinal ? "Entry Granted" : "Entry Refused";
-    el("conseq-body").textContent = passedFinal
-      ? "The officer stamps your passport and nods you through. Module 11 proficiency recorded."
-      : reason || "You hesitated too long and the officer lost patience. Replay the module to proceed.";
+    renderConsequence();
+    el("consequence").classList.add("active");
+    el("consequence").setAttribute("aria-hidden", "false");
+  }
 
-    el("conseq-scores").innerHTML = `
-      <span class="score-chip">Proficiency <b>${score}</b></span>
-      <span class="score-chip">XP <b>+${Math.round(state.xp)}</b></span>
-      <span class="score-chip">Mode <b>${state.mode === "free" ? "Free Flight" : state.mode}</b></span>`;
-
-    el("conseq-continue").textContent = passedFinal ? "Continue to Module 12" : "Replay Module 11";
-    overlay.classList.add("active");
-    overlay.setAttribute("aria-hidden", "false");
+  // Localized (re)render of the consequence card — safe to call on language change.
+  function renderConsequence() {
+    const c = state.conseq;
+    if (!c) return;
+    el("stamp-text").textContent = I18n.t(c.passedFinal ? "conseq.stampAdmitted" : "conseq.stampDenied");
+    el("conseq-label").textContent = I18n.t(c.passedFinal ? "conseq.labelPassed" : "conseq.labelFailed");
+    el("conseq-title").textContent = I18n.t(c.passedFinal ? "conseq.titleGranted" : "conseq.titleRefused");
+    el("conseq-body").textContent = c.passedFinal
+      ? I18n.t("conseq.bodyPass")
+      : I18n.t(c.reasonKey || "conseq.bodyFail");
+    el("conseq-scores").innerHTML =
+      `<span class="score-chip">${I18n.t("conseq.chipProficiency")} <b>${c.score}</b></span>` +
+      `<span class="score-chip">${I18n.t("conseq.chipXp")} <b>+${c.xp}</b></span>` +
+      `<span class="score-chip">${I18n.t("conseq.chipMode")} <b>${I18n.t("mode." + state.mode)}</b></span>`;
+    el("conseq-continue").textContent = I18n.t(c.passedFinal ? "conseq.continueNext" : "conseq.replay");
   }
 
   el("conseq-continue").addEventListener("click", () => {
@@ -245,7 +288,16 @@
 
   el("exit-btn").addEventListener("click", () => (window.location.href = "dashboard.html"));
 
+  /* ---------- Language change: re-render localized content ---------- */
+  window.addEventListener("i18n:change", () => {
+    renderSceneMeta();
+    renderMeters();
+    if (inBounds()) applyTurnContent();
+    if (state.finished) renderConsequence();
+  });
+
   /* ---------- Boot ---------- */
+  renderSceneMeta();
   renderMeters();
   renderTurn();
 })();

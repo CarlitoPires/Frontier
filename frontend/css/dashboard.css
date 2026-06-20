@@ -24,6 +24,7 @@
 .nav-item:hover { color: var(--ink-300); }
 .nav-item.active { color: var(--ink-100); background: var(--slate-700); }
 
+.topbar-right { display: flex; align-items: center; gap: 16px; }
 .citizen-chip { display: flex; align-items: center; gap: 12px; }
 .citizen-avatar {
   width: 40px; height: 40px; border-radius: 50%;
