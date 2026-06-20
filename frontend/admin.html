@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>FRONTIER · Command Center</title>
+  <link rel="stylesheet" href="css/obsidian.css" />
+  <link rel="stylesheet" href="css/admin.css" />
+</head>
+<body class="admin-body">
+  <div class="atmosphere"></div>
+
+  <!-- Auth gate veil (shown until admin is verified) -->
+  <div class="admin-gate" id="admin-gate" hidden>
+    <div class="gate-box glass">
+      <p class="eyebrow">Acesso Restrito</p>
+      <h2 class="display">Command Center</h2>
+      <p class="gate-msg" id="gate-msg">Verificando credenciais…</p>
+      <a class="btn" href="index.html">Voltar ao app</a>
+    </div>
+  </div>
+
+  <div class="admin-shell" id="admin-shell">
+
+    <!-- ===================== Sidebar ===================== -->
+    <aside class="admin-sidebar" id="sidebar">
+      <div class="admin-brand">
+        <span class="display brand-word">FRONTIER</span>
+        <span class="eyebrow brand-sub">Command Center</span>
+      </div>
+
+      <nav class="admin-nav" aria-label="Navegação principal">
+        <button class="nav-link active" data-panel="credentials">
+          <span class="nav-ico" aria-hidden="true">⬡</span>
+          <span>Configuração de Credenciais</span>
+        </button>
+
+        <button class="nav-link" data-panel="plans">
+          <span class="nav-ico" aria-hidden="true">◈</span>
+          <span>Planos &amp; Assinaturas</span>
+        </button>
+
+        <div class="nav-group">
+          <button class="nav-link nav-parent expanded" data-submenu="metrics" aria-expanded="true">
+            <span class="nav-ico" aria-hidden="true">◎</span>
+            <span>Métricas</span>
+            <span class="nav-chevron" aria-hidden="true">⌄</span>
+          </button>
+          <div class="nav-sub" id="submenu-metrics">
+            <button class="nav-sublink" data-panel="funil">Funil</button>
+            <button class="nav-sublink" data-panel="remarketing">Remarketing</button>
+            <button class="nav-sublink" data-panel="custos">Custos &amp; Margens</button>
+            <button class="nav-sublink" data-panel="precos">Preços</button>
+            <button class="nav-sublink" data-panel="escala">Escala</button>
+            <button class="nav-sublink" data-panel="concorrentes">Concorrentes</button>
+          </div>
+        </div>
+      </nav>
+
+      <div class="admin-side-foot">
+        <div class="admin-user">
+          <div class="admin-avatar">CP</div>
+          <div class="admin-user-meta">
+            <span class="admin-user-name" id="admin-user-name">Carlito Pires</span>
+            <span class="eyebrow" id="admin-user-role">Administrador</span>
+          </div>
+        </div>
+        <button class="btn btn-ghost" id="signout-btn">Sair</button>
+      </div>
+    </aside>
+
+    <!-- ===================== Main ===================== -->
+    <div class="admin-main">
+      <header class="admin-topbar">
+        <button class="nav-toggle" id="nav-toggle" aria-label="Abrir menu">☰</button>
+        <div class="crumb">
+          <span class="eyebrow">Painel</span>
+          <span class="crumb-current" id="crumb-current">Configuração de Credenciais</span>
+        </div>
+        <div class="admin-actions">
+          <span class="status-pill"><span class="status-dot"></span> Spark · Firebase</span>
+          <div class="admin-chip" title="Carlito Pires">CP</div>
+        </div>
+      </header>
+
+      <main class="admin-content" id="admin-content">
+
+        <!-- ===== Credenciais ===== -->
+        <section class="panel-view active" id="panel-credentials">
+          <div class="panel-head">
+            <div>
+              <h1 class="panel-title display">Configuração de Credenciais</h1>
+              <p class="panel-sub">Chaves de API e integrações. Valores sensíveis nunca são expostos no cliente.</p>
+            </div>
+            <button class="btn btn-gold">Nova credencial</button>
+          </div>
+
+          <div class="cards-grid">
+            <article class="card glass cred-card">
+              <div class="cred-top"><span class="cred-name">Mercado Pago</span><span class="badge warn">Pendente</span></div>
+              <p class="cred-desc">Pagamentos e assinaturas (plano Pro).</p>
+              <div class="cred-field"><span>Access Token</span><code>•••• •••• •••• ————</code></div>
+              <button class="btn btn-ghost sm">Configurar</button>
+            </article>
+
+            <article class="card glass cred-card">
+              <div class="cred-top"><span class="cred-name">Firebase</span><span class="badge ok">Ativo</span></div>
+              <p class="cred-desc">Auth + Firestore (Spark).</p>
+              <div class="cred-field"><span>Project ID</span><code id="cred-project">frontier-prod</code></div>
+              <button class="btn btn-ghost sm">Gerenciar</button>
+            </article>
+
+            <article class="card glass cred-card">
+              <div class="cred-top"><span class="cred-name">OpenAI / LLM</span><span class="badge warn">Pendente</span></div>
+              <p class="cred-desc">Motor de NPCs e avaliação de proficiência.</p>
+              <div class="cred-field"><span>API Key</span><code>sk-•••• ———— ————</code></div>
+              <button class="btn btn-ghost sm">Configurar</button>
+            </article>
+
+            <article class="card glass cred-card">
+              <div class="cred-top"><span class="cred-name">Weather API</span><span class="badge muted">Opcional</span></div>
+              <p class="cred-desc">Environment Sync (clima da cidade ativa).</p>
+              <div class="cred-field"><span>API Key</span><code>•••• ———— ————</code></div>
+              <button class="btn btn-ghost sm">Configurar</button>
+            </article>
+          </div>
+        </section>
+
+        <!-- ===== Planos & Assinaturas ===== -->
+        <section class="panel-view" id="panel-plans">
+          <div class="panel-head">
+            <div>
+              <h1 class="panel-title display">Planos &amp; Assinaturas</h1>
+              <p class="panel-sub">Distribuição Free/Pro e saúde das assinaturas.</p>
+            </div>
+          </div>
+
+          <div class="kpi-grid">
+            <div class="card glass kpi"><span class="kpi-label">Usuários totais</span><span class="kpi-value">12.480</span><span class="kpi-trend up">+8,2%</span></div>
+            <div class="card glass kpi"><span class="kpi-label">Free</span><span class="kpi-value">11.205</span><span class="kpi-trend">89,8%</span></div>
+            <div class="card glass kpi"><span class="kpi-label">Pro</span><span class="kpi-value metal">1.275</span><span class="kpi-trend up">+12,4%</span></div>
+            <div class="card glass kpi"><span class="kpi-label">MRR</span><span class="kpi-value">R$ 63.7k</span><span class="kpi-trend up">+9,1%</span></div>
+            <div class="card glass kpi"><span class="kpi-label">Churn (30d)</span><span class="kpi-value">3,1%</span><span class="kpi-trend down">-0,4%</span></div>
+            <div class="card glass kpi"><span class="kpi-label">Conversão Free→Pro</span><span class="kpi-value">10,2%</span><span class="kpi-trend up">+1,1%</span></div>
+          </div>
+
+          <div class="card glass split-card">
+            <h3 class="card-title">Distribuição de planos</h3>
+            <div class="dist-bar"><span class="dist-free" style="width:89.8%">Free 89,8%</span><span class="dist-pro" style="width:10.2%">Pro</span></div>
+            <p class="card-foot">Meta trimestral: 15% Pro · preparar gancho de upgrade no paywall.</p>
+          </div>
+        </section>
+
+        <!-- ===== Funil ===== -->
+        <section class="panel-view" id="panel-funil">
+          <div class="panel-head"><div><h1 class="panel-title display">Funil</h1><p class="panel-sub">Da aquisição à proficiência certificada.</p></div></div>
+          <div class="card glass funnel">
+            <div class="funnel-row"><span class="funnel-label">Visitantes</span><div class="funnel-bar" style="width:100%"><b>48.900</b></div></div>
+            <div class="funnel-row"><span class="funnel-label">Cadastros</span><div class="funnel-bar" style="width:74%"><b>36.200</b></div></div>
+            <div class="funnel-row"><span class="funnel-label">Ativaram (Bloco 1)</span><div class="funnel-bar" style="width:51%"><b>24.940</b></div></div>
+            <div class="funnel-row"><span class="funnel-label">Retidos (D7)</span><div class="funnel-bar" style="width:33%"><b>16.140</b></div></div>
+            <div class="funnel-row"><span class="funnel-label">Upgrade Pro</span><div class="funnel-bar gold" style="width:11%"><b>1.275</b></div></div>
+          </div>
+        </section>
+
+        <!-- ===== Remarketing ===== -->
+        <section class="panel-view" id="panel-remarketing">
+          <div class="panel-head"><div><h1 class="panel-title display">Remarketing</h1><p class="panel-sub">Reengajamento de usuários inativos e carrinhos de upgrade.</p></div></div>
+          <div class="kpi-grid">
+            <div class="card glass kpi"><span class="kpi-label">Inativos (14d)</span><span class="kpi-value">4.860</span></div>
+            <div class="card glass kpi"><span class="kpi-label">Upgrades abandonados</span><span class="kpi-value">312</span></div>
+            <div class="card glass kpi"><span class="kpi-label">Recuperados (push)</span><span class="kpi-value up">1.044</span><span class="kpi-trend up">21,5%</span></div>
+            <div class="card glass kpi"><span class="kpi-label">CTR campanha</span><span class="kpi-value">6,8%</span></div>
+          </div>
+          <div class="card glass list-card">
+            <h3 class="card-title">Segmentos ativos</h3>
+            <ul class="seg-list">
+              <li><span>Pausou no Bloco 3 (Alfândega)</span><span class="metal">1.920</span></li>
+              <li><span>Abriu paywall · não converteu</span><span class="metal">740</span></li>
+              <li><span>Concluiu cidade · sem 2ª cidade</span><span class="metal">388</span></li>
+            </ul>
+          </div>
+        </section>
+
+        <!-- ===== Custos & Margens ===== -->
+        <section class="panel-view" id="panel-custos">
+          <div class="panel-head"><div><h1 class="panel-title display">Custos &amp; Margens</h1><p class="panel-sub">Custo por usuário ativo e margem por plano.</p></div></div>
+          <div class="kpi-grid">
+            <div class="card glass kpi"><span class="kpi-label">Custo LLM / usuário ativo</span><span class="kpi-value">R$ 2,14</span></div>
+            <div class="card glass kpi"><span class="kpi-label">Infra (Firebase)</span><span class="kpi-value">R$ 0,00</span><span class="kpi-trend">Spark</span></div>
+            <div class="card glass kpi"><span class="kpi-label">Margem bruta · Pro</span><span class="kpi-value metal">86%</span></div>
+            <div class="card glass kpi"><span class="kpi-label">CAC</span><span class="kpi-value">R$ 9,40</span></div>
+            <div class="card glass kpi"><span class="kpi-label">LTV</span><span class="kpi-value">R$ 214</span></div>
+            <div class="card glass kpi"><span class="kpi-label">LTV / CAC</span><span class="kpi-value up">22,7x</span></div>
+          </div>
+        </section>
+
+        <!-- ===== Preços ===== -->
+        <section class="panel-view" id="panel-precos">
+          <div class="panel-head"><div><h1 class="panel-title display">Preços</h1><p class="panel-sub">Tiers, ancoragem e testes de elasticidade.</p></div></div>
+          <div class="cards-grid">
+            <article class="card glass price-card"><span class="eyebrow">Free</span><span class="price">R$ 0</span><p>Cidade base limitada · gancho de upgrade.</p></article>
+            <article class="card glass price-card featured"><span class="eyebrow">Pro</span><span class="price metal">R$ 49,90<small>/mês</small></span><p>Cidade base completa · certificação.</p></article>
+            <article class="card glass price-card"><span class="eyebrow">Global (upgrade)</span><span class="price">R$ 79,90<small>/mês</small></span><p>Duas cidades/idiomas em paralelo.</p></article>
+          </div>
+          <p class="panel-note">Ver <code>PRICING_REVIEW.md</code> para estratégia de ancoragem e testes A/B.</p>
+        </section>
+
+        <!-- ===== Escala ===== -->
+        <section class="panel-view" id="panel-escala">
+          <div class="panel-head"><div><h1 class="panel-title display">Escala</h1><p class="panel-sub">Capacidade, picos e limites do plano gratuito.</p></div></div>
+          <div class="kpi-grid">
+            <div class="card glass kpi"><span class="kpi-label">Sessões simultâneas (pico)</span><span class="kpi-value">1.840</span></div>
+            <div class="card glass kpi"><span class="kpi-label">Leituras Firestore / dia</span><span class="kpi-value">38.200</span><span class="kpi-trend">de 50k</span></div>
+            <div class="card glass kpi"><span class="kpi-label">Latência p95</span><span class="kpi-value">214 ms</span></div>
+            <div class="card glass kpi"><span class="kpi-label">Uptime (30d)</span><span class="kpi-value up">99,97%</span></div>
+          </div>
+          <div class="card glass split-card">
+            <h3 class="card-title">Uso da cota Spark</h3>
+            <div class="dist-bar"><span class="dist-pro" style="width:76%">Leituras 76%</span><span class="dist-free" style="width:24%">livre</span></div>
+            <p class="card-foot">Acima de 80% sustentado → avaliar migração para Blaze.</p>
+          </div>
+        </section>
+
+        <!-- ===== Concorrentes ===== -->
+        <section class="panel-view" id="panel-concorrentes">
+          <div class="panel-head"><div><h1 class="panel-title display">Concorrentes</h1><p class="panel-sub">Posicionamento e preço de referência no mercado.</p></div></div>
+          <div class="card glass table-card">
+            <table class="cmp-table">
+              <thead><tr><th>Player</th><th>Preço/mês</th><th>Modelo</th><th>Diferencial FRONTIER</th></tr></thead>
+              <tbody>
+                <tr><td>Duolingo Super</td><td>R$ 49,90</td><td>Gamificação</td><td>Imersão social com IA, sob pressão</td></tr>
+                <tr><td>Babbel</td><td>R$ 45,00</td><td>Cursos</td><td>RPG urbano · "conquistar" cidades</td></tr>
+                <tr><td>Cambly</td><td>R$ 159,00</td><td>Tutor humano</td><td>NPCs 24/7 · custo marginal baixo</td></tr>
+                <tr><td>iTalki</td><td>variável</td><td>Marketplace</td><td>Progressão linear "Hard Gate"</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+      </main>
+    </div>
+
+    <div class="admin-overlay" id="admin-overlay"></div>
+  </div>
+
+  <script type="module" src="js/admin.js"></script>
+</body>
+</html>

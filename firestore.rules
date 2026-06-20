@@ -1,0 +1,51 @@
+rules_version = '2';
+
+// FRONTIER — Firestore Security Rules
+// Real enforcement layer (client-side checks are UX only).
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+    // Admin = custom claim { admin: true } (set via Admin SDK / CLI).
+    function isAdmin() {
+      return isSignedIn() && request.auth.token.admin == true;
+    }
+
+    // A user can read/update only their own profile.
+    // 'plan', 'role' and 'subscription' are server-controlled: clients
+    // must NOT be able to promote themselves to pro/admin.
+    match /users/{uid} {
+      allow read: if isAdmin() || (isSignedIn() && request.auth.uid == uid);
+      allow create: if isSignedIn() && request.auth.uid == uid
+                    && request.resource.data.role == 'user'
+                    && request.resource.data.plan == 'free';
+      allow update: if isAdmin()
+                    || (isSignedIn() && request.auth.uid == uid
+                        && request.resource.data.role == resource.data.role
+                        && request.resource.data.plan == resource.data.plan
+                        && request.resource.data.subscription == resource.data.subscription);
+      allow delete: if isAdmin();
+    }
+
+    // Per-user progression (the Hard Gate state) — owner read; writes
+    // come from trusted server (Cloud Functions) only.
+    match /progress/{uid}/{document=**} {
+      allow read: if isAdmin() || (isSignedIn() && request.auth.uid == uid);
+      allow write: if false; // server-side only
+    }
+
+    // Aggregated metrics powering the admin command center.
+    match /metrics/{doc} {
+      allow read: if isAdmin();
+      allow write: if false; // written by Cloud Functions / batch jobs
+    }
+
+    // Content tree (cities -> blocks -> modules) is public-readable.
+    match /content/{document=**} {
+      allow read: if isSignedIn();
+      allow write: if isAdmin();
+    }
+  }
+}

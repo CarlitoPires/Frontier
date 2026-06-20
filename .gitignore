@@ -16,6 +16,12 @@ backend/prisma/migrations/dev.db*
 .env.*
 !.env.example
 
+# Firebase service-account / admin keys (NEVER commit these)
+*serviceAccount*.json
+*-firebase-adminsdk-*.json
+.firebase/
+firebase-debug.log
+
 # Logs
 *.log
 npm-debug.log*
