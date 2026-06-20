@@ -8,9 +8,17 @@ service cloud.firestore {
     function isSignedIn() {
       return request.auth != null;
     }
-    // Admin = custom claim { admin: true } (set via Admin SDK / CLI).
+    // Admin = custom claim { admin: true } (set via Admin SDK / CLI),
+    // OR a users/{uid} doc with role == 'admin' (no-key bootstrap path).
+    // Note: get()/exists() in rules bypass rules themselves (no recursion).
     function isAdmin() {
-      return isSignedIn() && request.auth.token.admin == true;
+      return isSignedIn() && (
+        request.auth.token.admin == true ||
+        (
+          exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+          get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin'
+        )
+      );
     }
 
     // A user can read/update only their own profile.

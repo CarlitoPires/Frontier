@@ -1,52 +1,187 @@
-/* FRONTIER — Authentication interactions
-   NOTE: This is the UI layer. Real auth must hit the backend
-   (see /backend/auth) — never trust client-side validation alone. */
+/* ============================================================
+ *  FRONTIER — Authentication flow (Firebase Email/Password)
+ *
+ *  - Login + Sign-up (mode toggle on the same card).
+ *  - On sign-up, creates the users/{uid} profile (role:user, plan:free)
+ *    — the shape consumed by the Hard Gate + Mercado Pago later.
+ *  - Routing: admins -> admin.html, everyone else -> dashboard.html.
+ *  - FaceID button stays as a cinematic flourish; it only proceeds if a
+ *    real session already exists (no fake bypass of real auth).
+ *
+ *  Security note: routing here is UX. Firestore Security Rules are the
+ *  real guard (see firestore.rules).
+ * ============================================================ */
+
+import {
+  auth,
+  db,
+  isAdmin,
+  signInWithEmailAndPassword,
+  createUserWithEmailAndPassword,
+  doc,
+  setDoc,
+  serverTimestamp,
+} from "./firebase-init.js";
 
 (function () {
   "use strict";
 
-  const form = document.getElementById("login-form");
-  const bioBtn = document.getElementById("biometric-btn");
-  const overlay = document.getElementById("bio-overlay");
-  const status = document.getElementById("bio-status");
+  const $ = (id) => document.getElementById(id);
+  const form = $("login-form");
+  const emailEl = $("email");
+  const passEl = $("password");
+  const submitBtn = $("submit-btn");
+  const errorEl = $("auth-error");
+  const headingEl = $("auth-heading");
+  const footText = $("auth-foot-text");
+  const toggleLink = $("toggle-mode");
+  const bioBtn = $("biometric-btn");
+  const overlay = $("bio-overlay");
+  const bioStatus = $("bio-status");
 
   const wait = (ms) => new Promise((r) => setTimeout(r, ms));
 
-  function goToDashboard() {
-    document.body.style.transition = "opacity 600ms cubic-bezier(0.16,1,0.3,1)";
-    document.body.style.opacity = "0";
-    setTimeout(() => (window.location.href = "dashboard.html"), 520);
+  let mode = "login";          // "login" | "signup"
+  let busy = false;
+
+  /* ---------- helpers ---------- */
+  function setText(el, key) {
+    el.setAttribute("data-i18n", key);   // keep language toggle correct
+    el.textContent = I18n.t(key);
   }
 
-  // --- Email / password (UI only; replace with real fetch to backend) ---
-  form.addEventListener("submit", (e) => {
+  function showError(key) {
+    errorEl.setAttribute("data-i18n", key);
+    errorEl.textContent = I18n.t(key);
+    errorEl.classList.add("show");
+  }
+  function clearError() {
+    errorEl.classList.remove("show");
+    errorEl.removeAttribute("data-i18n");
+    errorEl.textContent = "";
+  }
+
+  function renderMode() {
+    if (mode === "login") {
+      setText(headingEl, "auth.citizenLogin");
+      setText(submitBtn, "auth.enterCity");
+      setText(footText, "auth.noCitizenship");
+      setText(toggleLink, "auth.requestVisa");
+    } else {
+      setText(headingEl, "auth.citizenSignup");
+      setText(submitBtn, "auth.createAccount");
+      setText(footText, "auth.haveCitizenship");
+      setText(toggleLink, "auth.doLogin");
+    }
+  }
+
+  function mapAuthError(code) {
+    switch (code) {
+      case "auth/invalid-credential":
+      case "auth/wrong-password":
+      case "auth/user-not-found":
+      case "auth/invalid-email":
+        return "auth.errInvalid";
+      case "auth/email-already-in-use":
+        return "auth.errEmailInUse";
+      case "auth/weak-password":
+        return "auth.errWeakPass";
+      default:
+        return "auth.errGeneric";
+    }
+  }
+
+  function fadeTo(url) {
+    document.body.style.transition = "opacity 600ms var(--ease-cine)";
+    document.body.style.opacity = "0";
+    setTimeout(() => (window.location.href = url), 520);
+  }
+
+  async function routeAfterAuth(user) {
+    const admin = await isAdmin(user);
+    fadeTo(admin ? "admin.html" : "dashboard.html");
+  }
+
+  function setBusy(on, labelKey) {
+    busy = on;
+    submitBtn.disabled = on;
+    submitBtn.style.opacity = on ? "0.7" : "";
+    if (on && labelKey) submitBtn.textContent = I18n.t(labelKey);
+    else renderMode();
+  }
+
+  /* ---------- submit (login or signup) ---------- */
+  form.addEventListener("submit", async (e) => {
     e.preventDefault();
-    const email = document.getElementById("email").value.trim();
-    const pass = document.getElementById("password").value;
-    if (!email || !pass) return;
-    // Demo: in production -> await fetch('/api/auth/login', {...})
-    goToDashboard();
+    if (busy) return;
+    clearError();
+
+    const email = emailEl.value.trim();
+    const pass = passEl.value;
+    if (!email || !pass) { showError("auth.errEmptyFields"); return; }
+
+    try {
+      if (mode === "login") {
+        setBusy(true, "auth.signingIn");
+        const cred = await signInWithEmailAndPassword(auth, email, pass);
+        await routeAfterAuth(cred.user);
+      } else {
+        setBusy(true, "auth.creating");
+        const cred = await createUserWithEmailAndPassword(auth, email, pass);
+        // Create the citizen profile (must satisfy firestore.rules: role/user, plan/free).
+        await setDoc(doc(db, "users", cred.user.uid), {
+          email: email,
+          displayName: email.split("@")[0],
+          role: "user",
+          plan: "free",
+          nativeLang: I18n.getLang(),
+          subscription: { provider: "mercadopago", status: "none", externalId: null, currentPeriodEnd: null },
+          createdAt: serverTimestamp(),
+        });
+        // New accounts are never admin -> straight to the dashboard.
+        fadeTo("dashboard.html");
+      }
+    } catch (err) {
+      setBusy(false);
+      showError(mapAuthError(err && err.code));
+    }
   });
 
-  // --- Simulated FaceID cinematic sequence ---
+  /* ---------- mode toggle ---------- */
+  toggleLink.addEventListener("click", (e) => {
+    e.preventDefault();
+    if (busy) return;
+    mode = mode === "login" ? "signup" : "login";
+    clearError();
+    renderMode();
+  });
+
+  /* ---------- FaceID (cinematic; requires an existing session) ---------- */
   bioBtn.addEventListener("click", async () => {
+    if (busy) return;
+    clearError();
     overlay.classList.add("active");
     overlay.setAttribute("aria-hidden", "false");
 
-    const stepKeys = [
-      "auth.faceStep1",
-      "auth.faceStep2",
-      "auth.faceStep3",
-      "auth.faceStep4",
-    ];
+    const stepKeys = ["auth.faceStep1", "auth.faceStep2", "auth.faceStep3", "auth.faceStep4"];
     for (const key of stepKeys) {
-      status.textContent = I18n.t(key);   // read at display time -> respects current language
+      bioStatus.textContent = I18n.t(key);
       await wait(820);
     }
 
-    overlay.classList.add("success");
-    status.textContent = I18n.t("auth.faceConfirmed");
-    await wait(900);
-    goToDashboard();
+    if (auth.currentUser) {
+      overlay.classList.add("success");
+      bioStatus.textContent = I18n.t("auth.faceConfirmed");
+      await wait(800);
+      await routeAfterAuth(auth.currentUser);
+    } else {
+      // No real credential yet — fall back to email/passphrase.
+      overlay.classList.remove("active");
+      overlay.setAttribute("aria-hidden", "true");
+      showError("auth.bioNoSession");
+    }
   });
+
+  /* ---------- boot ---------- */
+  renderMode();
 })();

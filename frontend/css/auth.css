@@ -92,7 +92,18 @@
   vertical-align: middle;
 }
 .auth-foot { margin-top: 26px; font-size: 13px; color: var(--ink-500); text-align: center; }
-.auth-foot a { text-decoration: none; }
+.auth-foot a { text-decoration: none; cursor: pointer; }
+
+/* Inline auth error / status */
+.auth-error {
+  min-height: 18px;
+  margin: 2px 2px 10px;
+  font-size: 13px;
+  color: var(--signal-warn);
+  opacity: 0;
+  transition: opacity var(--dur-fast) var(--ease-soft);
+}
+.auth-error.show { opacity: 1; }
 
 /* --- Biometric overlay --- */
 .bio-overlay {

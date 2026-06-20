@@ -21,35 +21,46 @@ import {
   getAuth,
   onAuthStateChanged,
   signInWithEmailAndPassword,
+  createUserWithEmailAndPassword,
   signOut,
 } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
 import {
   getFirestore,
   doc,
   getDoc,
+  setDoc,
+  serverTimestamp,
 } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
 
-// ⬇️ Replace every value with your own from the Firebase console.
+// Firebase web config (public identifiers — safe to commit; not secrets).
 const FIREBASE_CONFIG = {
-  apiKey: "YOUR_API_KEY",
-  authDomain: "YOUR_PROJECT.firebaseapp.com",
-  projectId: "YOUR_PROJECT_ID",
-  storageBucket: "YOUR_PROJECT.appspot.com",
-  messagingSenderId: "YOUR_SENDER_ID",
-  appId: "YOUR_APP_ID",
+  apiKey: "AIzaSyCcsw4u7o_-j4L55nXYXFyNbmNHd2BHBBK",
+  authDomain: "frontier-prod-fa7aa.firebaseapp.com",
+  projectId: "frontier-prod-fa7aa",
+  storageBucket: "frontier-prod-fa7aa.firebasestorage.app",
+  messagingSenderId: "956563322989",
+  appId: "1:956563322989:web:83170ac3ce5b53e807a764",
+  measurementId: "G-ERDK5VTJ6B",
 };
 
 export const app = initializeApp(FIREBASE_CONFIG);
 export const auth = getAuth(app);
 export const db = getFirestore(app);
 
-// True once real keys are pasted in. Lets the admin UI render in a safe
-// "preview mode" (no auth calls) until Firebase is actually configured.
+// True once real keys are pasted in. (Now configured.)
 export const CONFIG_READY = FIREBASE_CONFIG.apiKey !== "YOUR_API_KEY";
 
-// Re-export the handful of helpers the app uses, so callers import
-// everything from one place.
-export { onAuthStateChanged, signInWithEmailAndPassword, signOut, doc, getDoc };
+// Re-export the helpers the app uses, so callers import from one place.
+export {
+  onAuthStateChanged,
+  signInWithEmailAndPassword,
+  createUserWithEmailAndPassword,
+  signOut,
+  doc,
+  getDoc,
+  setDoc,
+  serverTimestamp,
+};
 
 /**
  * Resolve whether the signed-in user is an admin.
