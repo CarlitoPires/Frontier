@@ -3,8 +3,10 @@ name: Deploy UI to GitHub Pages
 # Publishes the static frontend/ folder so the Obsidian Editorial UI
 # can be viewed live in a browser.
 #
-# ONE-TIME SETUP (repo owner): Settings -> Pages -> Build and deployment
-#   -> Source: "GitHub Actions". After that this workflow handles the rest.
+# Source must be set to "GitHub Actions" (Settings -> Pages). The
+# `enablement: true` flag below also initializes the Pages site via the
+# API on first run, which avoids the "Get Pages site failed" error that
+# occurs when a Pages site has never been created for the repo.
 
 on:
   push:
@@ -35,6 +37,9 @@ jobs:
 
       - name: Configure Pages
         uses: actions/configure-pages@v5
+        with:
+          # Initialize the Pages site via the API if it doesn't exist yet.
+          enablement: true
 
       - name: Upload static frontend
         uses: actions/upload-pages-artifact@v3

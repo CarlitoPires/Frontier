@@ -34,10 +34,10 @@
     overlay.setAttribute("aria-hidden", "false");
 
     const steps = [
-      "Aligning facial geometry…",
-      "Mapping 30,000 reference points…",
-      "Verifying liveness…",
-      "Matching citizen identity…",
+      "Alinhando geometria facial…",
+      "Mapeando 30.000 pontos de referência…",
+      "Verificando vivacidade…",
+      "Confrontando identidade do cidadão…",
     ];
     for (const s of steps) {
       status.textContent = s;
@@ -45,7 +45,7 @@
     }
 
     overlay.classList.add("success");
-    status.textContent = "Identity confirmed";
+    status.textContent = "Identidade confirmada";
     await wait(900);
     goToDashboard();
   });
