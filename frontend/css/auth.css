@@ -24,26 +24,35 @@
   color: transparent;
 }
 .auth-tagline {
-  font-size: 19px;
-  line-height: 1.5;
+  font-size: 18px;
+  line-height: 1.55;
   color: var(--ink-300);
-  max-width: 380px;
+  max-width: 32ch;          /* balanced reading measure for PT-BR */
   font-weight: 300;
+  text-wrap: balance;       /* evens line lengths, avoids orphan words */
 }
 .passport-stamp {
   margin-top: 48px;
   width: 132px; height: 132px;
   border: 2px solid var(--gold-matte);
   border-radius: 50%;
-  display: grid;
-  place-items: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  text-align: center;
+  padding: 16px;            /* keeps text inside the dashed ring */
   transform: rotate(-12deg);
   opacity: 0.55;
   color: var(--gold-soft);
-  font-size: 12px;
-  letter-spacing: 0.2em;
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  line-height: 1.1;
   position: relative;
 }
+.passport-stamp .stamp-top    { font-weight: 600; }
+.passport-stamp .stamp-bottom { font-size: 9px; letter-spacing: 0.24em; opacity: 0.85; }
 .passport-stamp::before {
   content: "";
   position: absolute; inset: 8px;
