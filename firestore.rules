@@ -37,11 +37,60 @@ service cloud.firestore {
       allow delete: if isAdmin();
     }
 
-    // Per-user progression (the Hard Gate state) — owner read; writes
-    // come from trusted server (Cloud Functions) only.
-    match /progress/{uid}/{document=**} {
+    // ---------- Hard Gate helpers ----------
+    function passThreshold() { return 80; }
+
+    function moduleFieldsValid(d) {
+      return d.keys().hasAll(['sequence', 'status', 'score'])
+        && d.keys().hasOnly(['sequence', 'status', 'score', 'attempts', 'updatedAt', 'passedAt', 'blockId', 'title'])
+        && d.sequence is int && d.sequence >= 1 && d.sequence <= 500
+        && d.score is int && d.score >= 0 && d.score <= 100
+        && (d.status == 'ATTEMPTED' || d.status == 'PROFICIENCY_PASSED');
+    }
+
+    // Module N is reachable only if N == 1, or module N-1 is already passed.
+    // get()/exists() bypass rules (no recursion) and read committed state,
+    // so a client cannot forge its way down the chain.
+    function predecessorPassed(uid, seq) {
+      return seq == 1
+        || (
+          exists(/databases/$(database)/documents/progress/$(uid)/modules/$(string(seq - 1)))
+          && get(/databases/$(database)/documents/progress/$(uid)/modules/$(string(seq - 1))).data.status == 'PROFICIENCY_PASSED'
+        );
+    }
+
+    // Per-user progression — the authoritative Hard Gate lives here.
+    match /progress/{uid} {
+      // Display cache (non-authoritative): owner-managed summary.
       allow read: if isAdmin() || (isSignedIn() && request.auth.uid == uid);
-      allow write: if false; // server-side only
+      allow create, update: if isSignedIn() && request.auth.uid == uid
+        && request.resource.data.unlockedSequence is int
+        && request.resource.data.unlockedSequence >= 1;
+      allow delete: if false;
+
+      match /modules/{moduleId} {
+        allow read: if isAdmin() || (isSignedIn() && request.auth.uid == uid);
+
+        // The gate: owner-only; doc-id must equal the sequence; you may only
+        // touch a module whose predecessor you've passed; and you may only
+        // claim PROFICIENCY_PASSED with a score >= threshold. A passed module
+        // can never be regressed to a lower status.
+        allow create, update: if isSignedIn() && request.auth.uid == uid
+          && moduleFieldsValid(request.resource.data)
+          && request.resource.data.sequence == int(moduleId)
+          && predecessorPassed(uid, request.resource.data.sequence)
+          && (
+            request.resource.data.status == 'ATTEMPTED'
+            || (request.resource.data.status == 'PROFICIENCY_PASSED'
+                && request.resource.data.score >= passThreshold())
+          )
+          && (
+            resource == null
+            || resource.data.status != 'PROFICIENCY_PASSED'
+            || request.resource.data.status == 'PROFICIENCY_PASSED'
+          );
+        allow delete: if false;
+      }
     }
 
     // Aggregated metrics powering the admin command center.

@@ -108,13 +108,23 @@
   const inBounds = () => state.turn < TURNS.length;
   const currentTurn = () => TURNS[Math.min(state.turn, TURNS.length - 1)];
 
+  // Scene reference — updated from the real session (window.LBProgress.module).
+  const sceneRef = { seq: 11, block: "04" };
+
   /* ---------- Rendering ---------- */
   function renderSceneMeta() {
     el("scene-loc").textContent = I18n.t("sim.location", {
       city: I18n.t("city.London"),
-      block: "04",
-      module: "11",
+      block: sceneRef.block,
+      module: String(sceneRef.seq),
     });
+  }
+
+  function adoptModule(mod) {
+    if (!mod) return;
+    sceneRef.seq = mod.sequence;
+    sceneRef.block = String(mod.blockId).padStart(2, "0");
+    renderSceneMeta();
   }
 
   function renderMeters() {
@@ -245,18 +255,28 @@
   });
 
   /* ---------- Consequence ---------- */
-  function endScene(passed, reasonKey) {
+  async function endScene(passed, reasonKey) {
     if (state.finished) return;
     state.finished = true;
     clearInterval(decay);
 
     const score = Math.round(Math.min(100, 55 + state.patience * 0.4 + state.xp * 0.2));
-    const passedFinal = passed && score >= 70;
+    const passedFinal = passed && score >= 80;   // threshold matches firestore.rules
 
     state.conseq = { passedFinal: passedFinal, score: score, xp: Math.round(state.xp), reasonKey: reasonKey };
 
     body.classList.toggle("mood-pleased", passedFinal);
     el("consequence").classList.toggle("rejected", !passedFinal);
+
+    // Write the result through the Hard Gate. The score we send is aligned
+    // to the verdict so Firestore never records a PASS the HUD called a fail.
+    try {
+      if (window.LBProgress && typeof window.LBProgress.submit === "function") {
+        const writeScore = passedFinal ? Math.max(score, 80) : Math.min(score, 79);
+        const res = await window.LBProgress.submit(writeScore);
+        if (res && res.error) console.warn("[LinguoBound] gate rejected write:", res.error);
+      }
+    } catch (e) { /* offline / rules — UI still shows the verdict */ }
 
     renderConsequence();
     el("consequence").classList.add("active");
@@ -281,9 +301,12 @@
   }
 
   el("conseq-continue").addEventListener("click", () => {
+    // Pass -> back to the dashboard (now showing advanced progress).
+    // Fail -> replay the same (still-current) module.
+    const dest = (state.conseq && state.conseq.passedFinal) ? "dashboard.html" : "simulation.html";
     body.style.transition = "opacity 500ms var(--ease-cine)";
     body.style.opacity = "0";
-    setTimeout(() => (window.location.href = "dashboard.html"), 480);
+    setTimeout(() => (window.location.href = dest), 480);
   });
 
   el("exit-btn").addEventListener("click", () => (window.location.href = "dashboard.html"));
@@ -296,7 +319,13 @@
     if (state.finished) renderConsequence();
   });
 
+  /* ---------- Real session: adopt the actual current module ---------- */
+  window.addEventListener("lb:session", () => {
+    if (window.LBProgress && window.LBProgress.module) adoptModule(window.LBProgress.module);
+  });
+
   /* ---------- Boot ---------- */
+  if (window.LBProgress && window.LBProgress.module) adoptModule(window.LBProgress.module);
   renderSceneMeta();
   renderMeters();
   renderTurn();

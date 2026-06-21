@@ -14,6 +14,7 @@
     tier: "BASE",                       // BASE | GLOBAL
     activeCity: "London",               // canonical (English) key -> I18n "city.*"
     completedModules: 11,
+    currentModule: 11,                  // the module the citizen is on (unlockedSequence)
     currentBlock: "04",
     totalModules: 500,
     // value = score; key = I18n label key
@@ -69,7 +70,7 @@
     el("city-name").textContent = I18n.t("city." + CITIZEN.activeCity);
     el("progress-label").textContent = I18n.t("dash.progressMeta", {
       block: CITIZEN.currentBlock,
-      module: CITIZEN.completedModules,
+      module: CITIZEN.currentModule,
       total: CITIZEN.totalModules,
     });
     el("tier-label").textContent = I18n.t(CITIZEN.tier === "GLOBAL" ? "tier.global" : "tier.base");
@@ -162,24 +163,26 @@
   // Re-render localized content (not the rain) when the language changes.
   window.addEventListener("i18n:change", renderAll);
 
-  // Merge REAL Firestore user data (from session.js) into the view model.
-  // Progression aggregates (fluency/hierarchy) will arrive once the backend
-  // writes them; until then those stay as illustrative defaults.
-  window.addEventListener("lb:session", (e) => {
-    const profile = e.detail && e.detail.profile;
-    if (!profile) return;
-    CITIZEN.name = profile.displayName || (profile.email ? profile.email.split("@")[0] : CITIZEN.name);
-    CITIZEN.tier = profile.plan === "pro" ? "GLOBAL" : "BASE";
-    renderAll();
-  });
-
-  // If the session resolved before this script attached its listener, apply now.
-  if (window.LB_SESSION && window.LB_SESSION.profile) {
-    const p = window.LB_SESSION.profile;
-    CITIZEN.name = p.displayName || (p.email ? p.email.split("@")[0] : CITIZEN.name);
-    CITIZEN.tier = p.plan === "pro" ? "GLOBAL" : "BASE";
+  // Merge REAL Firestore data (from session.js) into the view model.
+  // Identity + plan + progression counters are live; the fluency radar and
+  // city hierarchy stay illustrative until the backend writes those aggregates.
+  function applySession(detail) {
+    if (!detail) return;
+    const profile = detail.profile;
+    if (profile) {
+      CITIZEN.name = profile.displayName || (profile.email ? profile.email.split("@")[0] : CITIZEN.name);
+      CITIZEN.tier = profile.plan === "pro" ? "GLOBAL" : "BASE";
+    }
+    const unlocked = detail.unlockedSequence || 1;
+    CITIZEN.completedModules = typeof detail.completedCount === "number" ? detail.completedCount : 0;
+    CITIZEN.currentModule = unlocked;
+    CITIZEN.currentBlock = String(Math.ceil(unlocked / 25)).padStart(2, "0");
     renderAll();
   }
+
+  window.addEventListener("lb:session", (e) => applySession(e.detail));
+  // If the session resolved before this listener attached, apply now.
+  if (window.LB_SESSION) applySession(window.LB_SESSION);
 
   /* ---------- Resume ---------- */
   el("resume-btn").addEventListener("click", () => {

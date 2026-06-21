@@ -1,28 +1,60 @@
 /* ============================================================
- *  LinguoBound — Session guard (auth-gated pages)
+ *  LinguoBound — Session guard + progression engine (Spark-friendly)
  *
- *  Used by dashboard.html and simulation.html:
- *   - Redirects to the login page when no user is signed in.
- *   - Loads the real users/{uid} profile from Firestore.
- *   - Applies the citizen's saved language (profile.nativeLang).
- *   - Exposes window.LB_SESSION and fires "lb:session" so page
- *     scripts (dashboard.js / hud.js) can render real data.
- *   - Wires any #signout-btn.
+ *  Shared by dashboard.html and simulation.html.
  *
- *  Security note: this redirect is UX. Firestore Security Rules are
- *  the real guard for the data itself.
+ *  RESPONSIBILITIES
+ *   - Auth gate: redirect to login when signed out.
+ *   - Load real users/{uid} profile + progress/{uid} summary.
+ *   - Apply the citizen's saved language (profile.nativeLang).
+ *   - Hard Gate (read side): on the simulation page, refuse to open a
+ *     module whose PREDECESSOR module doc isn't PROFICIENCY_PASSED — the
+ *     predecessor doc is write-protected by rules, so this can't be faked.
+ *   - Expose window.LBProgress.submit(score): writes the attempt + (if the
+ *     score clears the threshold) advances the gate, in a batched write
+ *     that Firestore Security Rules independently re-validate.
+ *   - Fire "lb:session" so dashboard.js / hud.js can render real data.
+ *
+ *  SECURITY (Spark / no Cloud Functions):
+ *   The ORDERING gate is fully enforced by firestore.rules (you cannot
+ *   write PASS for N without N-1 passed + score>=threshold). The score is
+ *   still computed client-side, so a determined attacker could forge a
+ *   passing score for the *current* module — closing that hole requires a
+ *   trusted backend (App Check + Functions/Blaze, or our Node service).
  * ============================================================ */
 
-import { auth, db, onAuthStateChanged, signOut, doc, getDoc, CONFIG_READY } from "./firebase-init.js";
+import {
+  auth, db, onAuthStateChanged, signOut,
+  doc, getDoc, serverTimestamp, writeBatch, increment, CONFIG_READY,
+} from "./firebase-init.js";
 
 (function () {
   "use strict";
 
+  const PASS_THRESHOLD = 80;       // must match firestore.rules passThreshold()
+  const TOTAL_MODULES = 500;
+
   const veil = document.getElementById("lb-veil");
   const hideVeil = () => veil && veil.classList.add("hidden");
   const toLogin = () => window.location.replace("index.html");
+  const toDashboard = () => window.location.replace("dashboard.html");
+  const isSimPage = document.body.classList.contains("sim-body");
 
-  // Sign-out works regardless of where it lives on the page.
+  const blockOf = (seq) => Math.ceil(seq / 25);              // 1..20
+  const indexInBlock = (seq) => ((seq - 1) % 25) + 1;        // 1..25
+
+  // Public progression API (consumed by the classic hud.js / dashboard.js).
+  const LBProgress = {
+    ready: false,
+    uid: null,
+    unlockedSequence: 1,
+    completedCount: 0,
+    module: null,            // the module being played on the sim page
+    submit: submitResult,
+  };
+  window.LBProgress = LBProgress;
+
+  /* ---------- sign out ---------- */
   const signoutBtn = document.getElementById("signout-btn");
   if (signoutBtn) {
     signoutBtn.addEventListener("click", async () => {
@@ -31,25 +63,123 @@ import { auth, db, onAuthStateChanged, signOut, doc, getDoc, CONFIG_READY } from
     });
   }
 
-  // Without real keys we can't gate — let the page render (dev only).
-  if (!CONFIG_READY) { hideVeil(); return; }
+  /* ---------- write a result (attempt + gate advance) ---------- */
+  async function submitResult(score) {
+    const uid = LBProgress.uid;
+    const mod = LBProgress.module;
+    if (!CONFIG_READY || !uid || !mod) return { passed: score >= PASS_THRESHOLD, written: false };
 
+    const passed = score >= PASS_THRESHOLD;
+    const modRef = doc(db, "progress", uid, "modules", String(mod.sequence));
+    const sumRef = doc(db, "progress", uid);
+
+    // Read current state to avoid double-counting on replays.
+    let existing = null;
+    try { const s = await getDoc(modRef); if (s.exists()) existing = s.data(); } catch (e) { /* ignore */ }
+    const newlyPassed = passed && (!existing || existing.status !== "PROFICIENCY_PASSED");
+
+    const batch = writeBatch(db);
+    batch.set(modRef, {
+      sequence: mod.sequence,
+      status: passed ? "PROFICIENCY_PASSED" : "ATTEMPTED",
+      score: Math.round(score),
+      attempts: increment(1),
+      updatedAt: serverTimestamp(),
+      passedAt: passed ? serverTimestamp() : null,
+      blockId: mod.blockId,
+      title: mod.title,
+    }, { merge: true });
+
+    if (newlyPassed) {
+      const newUnlocked = Math.max(LBProgress.unlockedSequence, mod.sequence + 1);
+      batch.set(sumRef, {
+        unlockedSequence: newUnlocked,
+        completedCount: increment(1),
+        activeCity: "London",
+        lastModuleId: String(mod.sequence),
+        updatedAt: serverTimestamp(),
+      }, { merge: true });
+      LBProgress.unlockedSequence = newUnlocked;
+      LBProgress.completedCount += 1;
+    }
+
+    try {
+      await batch.commit();
+      return { passed, newlyPassed, written: true };
+    } catch (e) {
+      // Rules rejected the write (e.g. tampered sequence) — fail closed.
+      console.warn("[LinguoBound] progress write rejected:", e && e.code);
+      return { passed, newlyPassed: false, written: false, error: e && e.code };
+    }
+  }
+
+  /* ---------- read-side Hard Gate (sim page) ---------- */
+  async function resolveSimModule(uid, unlocked) {
+    const params = new URLSearchParams(window.location.search);
+    const raw = params.get("seq") || params.get("module");
+    let requested = raw ? parseInt(raw, 10) : unlocked;
+    if (!Number.isFinite(requested) || requested < 1) requested = unlocked;
+    requested = Math.min(requested, TOTAL_MODULES);
+
+    // Authoritative check: predecessor module doc must be PASSED (or seq==1).
+    if (requested > 1) {
+      let ok = false;
+      try {
+        const prev = await getDoc(doc(db, "progress", uid, "modules", String(requested - 1)));
+        ok = prev.exists() && prev.data().status === "PROFICIENCY_PASSED";
+      } catch (e) { ok = false; }
+      if (!ok) { toDashboard(); return null; }   // unearned -> bounce back
+    }
+
+    return {
+      sequence: requested,
+      blockId: blockOf(requested),
+      indexInBlock: indexInBlock(requested),
+      title: "Customs Control", // placeholder content until the content store lands
+    };
+  }
+
+  /* ---------- preview fallback (no Firebase keys) ---------- */
+  if (!CONFIG_READY) {
+    if (isSimPage) LBProgress.module = { sequence: 11, blockId: 1, indexInBlock: 11, title: "Customs Control" };
+    LBProgress.ready = true;
+    hideVeil();
+    return;
+  }
+
+  /* ---------- boot ---------- */
   onAuthStateChanged(auth, async (user) => {
     if (!user) { toLogin(); return; }
+    LBProgress.uid = user.uid;
 
-    let profile = null;
-    try {
-      const snap = await getDoc(doc(db, "users", user.uid));
-      if (snap.exists()) profile = snap.data();
-    } catch (e) { /* rules / network — fall back to mock */ }
+    let profile = null, summary = null;
+    try { const s = await getDoc(doc(db, "users", user.uid)); if (s.exists()) profile = s.data(); } catch (e) {}
+    try { const s = await getDoc(doc(db, "progress", user.uid)); if (s.exists()) summary = s.data(); } catch (e) {}
 
-    // Honor the citizen's saved language from their real profile.
+    const unlocked = (summary && summary.unlockedSequence) || 1;
+    const completed = (summary && summary.completedCount) || 0;
+    LBProgress.unlockedSequence = unlocked;
+    LBProgress.completedCount = completed;
+
+    // Apply the citizen's saved language.
     if (profile && profile.nativeLang && window.I18n &&
         I18n.SUPPORTED.indexOf(profile.nativeLang) !== -1) {
       I18n.setLang(profile.nativeLang);
     }
 
-    window.LB_SESSION = { user: user, profile: profile };
+    // Hard Gate (read side) on the simulation page.
+    if (isSimPage) {
+      const mod = await resolveSimModule(user.uid, unlocked);
+      if (!mod) return; // redirected away
+      LBProgress.module = mod;
+    }
+
+    LBProgress.ready = true;
+    window.LB_SESSION = {
+      user: user, profile: profile, progress: summary,
+      unlockedSequence: unlocked, completedCount: completed,
+      module: LBProgress.module,
+    };
     window.dispatchEvent(new CustomEvent("lb:session", { detail: window.LB_SESSION }));
     hideVeil();
   });
