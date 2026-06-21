@@ -30,6 +30,13 @@ never shows an empty scene.
     "initials": "BO"
   },
 
+  // OPTIONAL (used by Block Zero / beginner pedagogy)
+  "phase": 1,                                 // narrative phase: 1 Flight · 2 Landing · 3 Arrival
+  "objective": { "en": "...", "pt-BR": "..." }, // the teaching logic: what this module teaches from zero
+  "drills": [                                  // phonetic / survival repetition items
+    { "word": "excuse me", "say": "iks-KIÚZ mi", "note": { "en": "...", "pt-BR": "..." } }
+  ],
+
   "dialogueSteps": [
     {
       "text":   "English line the NPC says (LEARNING CONTENT — never translated)",
@@ -42,6 +49,16 @@ never shows an empty scene.
   ]
 }
 ```
+
+### Difficulty adaptation by learner level
+The user picks a level at sign-up (`users/{uid}.level`): `absolute_beginner` |
+`intermediate` | `fluent`. The HUD adapts the same content accordingly:
+
+| Level | Patience start | Decay | Default teleprompter | Earpiece |
+|-------|---------------|-------|----------------------|----------|
+| absolute_beginner | 90 (forgiving) | slow | Basic | auto-on |
+| intermediate | 78 | normal | Basic | off |
+| fluent | 70 | fast | Free Flight (open mic) | off |
 
 ### Rules / conventions
 - `text`, `basic`, `fluent` are the **English learning content** and must stay English.

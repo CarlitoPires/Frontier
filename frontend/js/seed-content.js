@@ -1,15 +1,16 @@
 /* ============================================================
  *  LinguoBound — Content seeder (admin only)
- *  Writes the bundled Customs modules to Firestore content/{sequence}.
+ *  Writes the bundled Block Zero modules (City 01: London Immersion,
+ *  modules 01–20) to Firestore content/{sequence}.
  *  Allowed by firestore.rules only for admins.
  * ============================================================ */
 
 import { db, doc, setDoc } from "./firebase-init.js";
-import { CUSTOMS_MODULES } from "./content-customs.js";
+import { BLOCK0_MODULES } from "./content-block0.js";
 
-export async function seedCustoms() {
+export async function seedBlockZero() {
   let n = 0;
-  for (const m of CUSTOMS_MODULES) {
+  for (const m of BLOCK0_MODULES) {
     await setDoc(doc(db, "content", String(m.sequence)), m, { merge: true });
     n += 1;
   }

@@ -46,6 +46,9 @@ import {
 
   let mode = "login";          // "login" | "signup"
   let busy = false;
+  let selectedLevel = "absolute_beginner";
+
+  const levelField = $("level-field");
 
   /* ---------- helpers ---------- */
   function setText(el, key) {
@@ -70,13 +73,24 @@ import {
       setText(submitBtn, "auth.enterCity");
       setText(footText, "auth.noCitizenship");
       setText(toggleLink, "auth.requestVisa");
+      if (levelField) levelField.hidden = true;
     } else {
       setText(headingEl, "auth.citizenSignup");
       setText(submitBtn, "auth.createAccount");
       setText(footText, "auth.haveCitizenship");
       setText(toggleLink, "auth.doLogin");
+      if (levelField) levelField.hidden = false;   // ask the level at sign-up
     }
   }
+
+  // Level selector (segmented control).
+  document.querySelectorAll(".level-opt").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      document.querySelectorAll(".level-opt").forEach((b) => b.classList.remove("active"));
+      btn.classList.add("active");
+      selectedLevel = btn.dataset.level;
+    });
+  });
 
   function mapAuthError(code) {
     switch (code) {
@@ -137,6 +151,7 @@ import {
           displayName: email.split("@")[0],
           role: "user",
           plan: "free",
+          level: selectedLevel,
           nativeLang: I18n.getLang(),
           subscription: { provider: "mercadopago", status: "none", externalId: null, currentPeriodEnd: null },
           createdAt: serverTimestamp(),
@@ -176,6 +191,7 @@ import {
           displayName: cred.user.displayName || (cred.user.email || "").split("@")[0],
           role: "user",
           plan: "free",
+          level: selectedLevel,
           nativeLang: I18n.getLang(),
           subscription: { provider: "mercadopago", status: "none", externalId: null, currentPeriodEnd: null },
           createdAt: serverTimestamp(),

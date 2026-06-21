@@ -49,6 +49,15 @@
 
         <p class="auth-error" id="auth-error" role="alert" aria-live="polite"></p>
 
+        <div class="level-field" id="level-field" hidden>
+          <span class="level-q" data-i18n="auth.levelQuestion">What is your current level?</span>
+          <div class="level-opts" role="group" aria-label="Level">
+            <button type="button" class="level-opt active" data-level="absolute_beginner" data-i18n="auth.levelBeginner">Absolute Beginner</button>
+            <button type="button" class="level-opt" data-level="intermediate" data-i18n="auth.levelIntermediate">Intermediate</button>
+            <button type="button" class="level-opt" data-level="fluent" data-i18n="auth.levelFluent">Fluent</button>
+          </div>
+        </div>
+
         <button type="submit" id="submit-btn" class="btn btn-gold" style="width:100%; margin-top:6px" data-i18n="auth.enterCity">
           Enter the City
         </button>

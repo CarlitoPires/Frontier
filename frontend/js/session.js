@@ -27,7 +27,7 @@ import {
   auth, db, onAuthStateChanged, signOut,
   doc, getDoc, serverTimestamp, writeBatch, increment, CONFIG_READY,
 } from "./firebase-init.js";
-import { CUSTOMS_BY_SEQUENCE } from "./content-customs.js";
+import { BLOCK0_BY_SEQUENCE } from "./content-block0.js";
 
 (function () {
   "use strict";
@@ -48,6 +48,7 @@ import { CUSTOMS_BY_SEQUENCE } from "./content-customs.js";
   const LBProgress = {
     ready: false,
     uid: null,
+    level: "absolute_beginner",
     unlockedSequence: 1,
     completedCount: 0,
     module: null,            // the module being played on the sim page
@@ -121,7 +122,7 @@ import { CUSTOMS_BY_SEQUENCE } from "./content-customs.js";
       const c = await getDoc(doc(db, "content", String(seq)));
       if (c.exists()) content = c.data();
     } catch (e) { /* not signed in / rules / network */ }
-    if (!content) content = CUSTOMS_BY_SEQUENCE[seq] || null;  // bundled fallback
+    if (!content) content = BLOCK0_BY_SEQUENCE[seq] || null;  // bundled fallback
     return content;
   }
 
@@ -156,9 +157,10 @@ import { CUSTOMS_BY_SEQUENCE } from "./content-customs.js";
   /* ---------- preview fallback (no Firebase keys) ---------- */
   if (!CONFIG_READY) {
     if (isSimPage) {
-      const content = CUSTOMS_BY_SEQUENCE[1] || null;
-      LBProgress.module = { sequence: 1, blockId: 1, indexInBlock: 1, title: "Customs", content: content };
+      const content = BLOCK0_BY_SEQUENCE[1] || null;
+      LBProgress.module = { sequence: 1, blockId: 1, indexInBlock: 1, title: "Boarding", content: content };
     }
+    LBProgress.level = "absolute_beginner";
     LBProgress.ready = true;
     hideVeil();
     return;
@@ -177,6 +179,7 @@ import { CUSTOMS_BY_SEQUENCE } from "./content-customs.js";
     const completed = (summary && summary.completedCount) || 0;
     LBProgress.unlockedSequence = unlocked;
     LBProgress.completedCount = completed;
+    LBProgress.level = (profile && profile.level) || "absolute_beginner";
 
     // Apply the citizen's saved language.
     if (profile && profile.nativeLang && window.I18n &&
@@ -195,6 +198,7 @@ import { CUSTOMS_BY_SEQUENCE } from "./content-customs.js";
     window.LB_SESSION = {
       user: user, profile: profile, progress: summary,
       unlockedSequence: unlocked, completedCount: completed,
+      level: LBProgress.level,
       module: LBProgress.module,
     };
     window.dispatchEvent(new CustomEvent("lb:session", { detail: window.LB_SESSION }));

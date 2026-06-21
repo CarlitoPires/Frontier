@@ -114,6 +114,21 @@
 }
 .auth-error.show { opacity: 1; }
 
+/* Proficiency level selector (sign-up) */
+.level-field { margin: 4px 0 16px; }
+.level-q { display: block; font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--ink-500); margin-bottom: 10px; }
+.level-opts { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 6px; }
+.level-opt {
+  appearance: none; cursor: pointer;
+  background: var(--slate-900); border: 1px solid var(--glass-stroke);
+  color: var(--ink-500); font-family: var(--font-body);
+  font-size: 11px; letter-spacing: 0.02em;
+  padding: 11px 8px; border-radius: 10px;
+  transition: color var(--dur-fast) var(--ease-soft), border-color var(--dur-fast) var(--ease-soft), background var(--dur-fast) var(--ease-soft);
+}
+.level-opt:hover { color: var(--ink-300); border-color: var(--glass-hi); }
+.level-opt.active { color: #1a1407; background: linear-gradient(180deg, var(--gold-soft), var(--gold-matte)); border-color: transparent; font-weight: 600; }
+
 /* --- Biometric overlay --- */
 .bio-overlay {
   position: fixed; inset: 0; z-index: 50;

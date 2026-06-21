@@ -76,6 +76,7 @@
   let TURNS = DEFAULT_TURNS;
   let sceneThreshold = 80;       // must stay >= firestore.rules threshold (80)
   let sceneTitleObj = null;      // localized {en, pt-BR} when content-driven
+  let learnerLevel = "absolute_beginner";  // adapts difficulty (from profile.level)
 
   /* ---------- State ---------- */
   const state = {
@@ -159,13 +160,22 @@
     }
     renderSceneTitle();
 
-    // Reset the run for the (re)loaded scene.
-    state.turn = 0; state.patience = 78; state.noise = state.baseNoise;
-    state.mode = "basic"; state.earpiece = false; state.xp = 0;
-    state.listening = false; state.finished = false; state.conseq = null;
+    // Reset the run for the (re)loaded scene, ADAPTED to the learner's level:
+    //  - Absolute Beginner: forgiving patience, slow decay, earpiece auto-on, Basic script.
+    //  - Intermediate: balanced.
+    //  - Fluent: less patience, faster decay, Free Flight (open mic, no script).
+    const lv = learnerLevel;
+    state.turn = 0;
+    state.patience = lv === "fluent" ? 70 : lv === "intermediate" ? 78 : 90;
+    state.decayRate = lv === "fluent" ? 1.5 : lv === "intermediate" ? 1.1 : 0.75;
+    state.mode = lv === "fluent" ? "free" : "basic";
+    state.earpiece = lv === "absolute_beginner";   // beginners always hear the earpiece
+    state.noise = state.baseNoise;
+    state.xp = 0; state.listening = false; state.finished = false; state.conseq = null;
 
-    earpiece.hidden = true; earpieceBtn.setAttribute("aria-pressed", "false");
-    document.querySelectorAll(".tp-mode").forEach((b) => b.classList.toggle("active", b.dataset.mode === "basic"));
+    earpiece.hidden = !state.earpiece;
+    earpieceBtn.setAttribute("aria-pressed", String(state.earpiece));
+    document.querySelectorAll(".tp-mode").forEach((b) => b.classList.toggle("active", b.dataset.mode === state.mode));
     el("consequence").classList.remove("active", "rejected");
     el("consequence").setAttribute("aria-hidden", "true");
     npcLine.classList.remove("revealed");
@@ -245,7 +255,7 @@
   /* ---------- Patience decay (the "impatient NPC" pressure) ---------- */
   const decay = setInterval(() => {
     if (state.finished || state.listening) return;
-    state.patience = Math.max(0, state.patience - 1.1);
+    state.patience = Math.max(0, state.patience - (state.decayRate || 1.1));
     // Noise drifts organically; high noise eats extra patience.
     state.noise = Math.min(72, Math.max(8, state.noise + (Math.random() - 0.5) * 9));
     if (state.noise > 55) state.patience = Math.max(0, state.patience - 0.6);
@@ -369,10 +379,12 @@
 
   /* ---------- Real session: adopt the actual current module + content ---------- */
   window.addEventListener("lb:session", () => {
+    if (window.LBProgress && window.LBProgress.level) learnerLevel = window.LBProgress.level;
     if (window.LBProgress && window.LBProgress.module) adoptModule(window.LBProgress.module);
   });
 
   /* ---------- Boot ---------- */
+  if (window.LBProgress && window.LBProgress.level) learnerLevel = window.LBProgress.level;
   renderSceneMeta();
   loadScene(null); // default scene until the real module/content arrives
   if (window.LBProgress && window.LBProgress.module) adoptModule(window.LBProgress.module);

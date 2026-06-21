@@ -7,7 +7,7 @@
  * ============================================================ */
 
 import { auth, isAdmin, onAuthStateChanged, signOut, CONFIG_READY } from "./firebase-init.js";
-import { seedCustoms } from "./seed-content.js";
+import { seedBlockZero } from "./seed-content.js";
 
 (function () {
   "use strict";
@@ -73,7 +73,7 @@ import { seedCustoms } from "./seed-content.js";
     seedBtn.disabled = true;
     if (seedStatus) seedStatus.textContent = "Populando…";
     try {
-      const n = await seedCustoms();
+      const n = await seedBlockZero();
       if (seedStatus) seedStatus.textContent = "✓ " + n + " módulos publicados em content/";
     } catch (e) {
       if (seedStatus) seedStatus.textContent = "Falhou: " + ((e && e.code) || "erro");
