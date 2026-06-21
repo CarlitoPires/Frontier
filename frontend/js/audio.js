@@ -24,6 +24,8 @@
 
   const supportsAudio = typeof (global.AudioContext || global.webkitAudioContext) === "function";
   const supportsTTS = "speechSynthesis" in global;
+  const SR = global.SpeechRecognition || global.webkitSpeechRecognition;
+  const supportsSTT = typeof SR === "function";
 
   let ctx = null;
   let master = null;       // master gain -> destination
@@ -33,6 +35,7 @@
 
   let unlocked = false;
   let muted = false;
+  let listening = false;   // ducks the bed while the mic is open
   let scene = { phase: 1, mood: "neutral", baseNoise: 40 };
   let intensity = 0.5;     // 0..1, from the live noise meter
   let pendingText = null;  // line to (re)speak once unlocked
@@ -105,7 +108,8 @@
 
   function applyGain(ramp) {
     if (!ambientGain || !ctx) return;
-    const g = muted ? 0 : (speaking ? targetGain() * 0.28 : targetGain());
+    const duck = (speaking || listening);
+    const g = muted ? 0 : (duck ? targetGain() * 0.22 : targetGain());
     ambientGain.gain.cancelScheduledValues(ctx.currentTime);
     ambientGain.gain.linearRampToValueAtTime(Math.max(0.0001, g), ctx.currentTime + (ramp || 0.25));
   }
@@ -170,6 +174,36 @@
 
   function replay(rate) { if (pendingText) { unlock(); speakLine(pendingText, rate); } }
 
+  /* ---------- speech recognition (voice scoring) ---------- */
+  function canListen() { return supportsSTT; }
+
+  function startListen(opts) {
+    if (!supportsSTT) return null;
+    opts = opts || {};
+    // Don't let the mic capture the NPC's own voice; hush the bed too.
+    if (supportsTTS) { try { global.speechSynthesis.cancel(); } catch (e) {} }
+    listening = true; applyGain(0.12);
+
+    let rec;
+    try { rec = new SR(); } catch (e) { listening = false; applyGain(0.3); return null; }
+    rec.lang = opts.lang || "en-GB";
+    rec.interimResults = false;
+    rec.maxAlternatives = 1;
+    rec.continuous = false;
+
+    rec.onresult = (e) => {
+      const r = e.results && e.results[0] && e.results[0][0];
+      if (r && opts.onresult) opts.onresult(r.transcript, r.confidence);
+    };
+    rec.onerror = (e) => { if (opts.onerror) opts.onerror(e && e.error); };
+    rec.onend = () => {
+      listening = false; applyGain(0.3);
+      if (opts.onend) opts.onend();
+    };
+    try { rec.start(); } catch (e) { /* already started */ }
+    return rec;
+  }
+
   function toggleMute() {
     unlock();
     muted = !muted;
@@ -189,6 +223,7 @@
 
   global.LBAudio = {
     setScene, setIntensity, speakLine, replay, toggleMute, isMuted, unlock,
+    canListen, startListen,
     supported: supportsAudio || supportsTTS,
   };
 })(window);

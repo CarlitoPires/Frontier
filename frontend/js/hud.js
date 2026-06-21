@@ -89,6 +89,14 @@
     listening: false,
     finished: false,
     conseq: null,     // {passed, score, xp, mode, reasonKey} for re-render
+    decayRate: 1.1,
+    speakRate: 1.0,
+    accs: [],         // per-step pronunciation accuracy (0..1)
+    retries: 0,       // retries on the current step
+    struggleHits: 0,  // steps that needed a retry / scored low
+    transcript: "",   // last speech-to-text result
+    pendingEval: false,
+    rec: null,        // active SpeechRecognition instance
   };
 
   /* ---------- Elements ---------- */
@@ -181,6 +189,15 @@
     state.earpiece = lv === "absolute_beginner";   // beginners always hear the earpiece
     state.noise = state.baseNoise;
     state.xp = 0; state.listening = false; state.finished = false; state.conseq = null;
+    state.accs = []; state.retries = 0; state.struggleHits = 0; state.transcript = ""; state.pendingEval = false;
+    state.speakRate = 1.0;
+
+    // Slow-tempo assist (set when the learner struggled in a previous module).
+    if (window.LBProgress && window.LBProgress.assist) {
+      state.decayRate *= 0.7;     // more time
+      state.speakRate = 0.85;     // NPC speaks more slowly
+      state.earpiece = true;      // keep the earpiece on
+    }
 
     earpiece.hidden = !state.earpiece;
     earpieceBtn.setAttribute("aria-pressed", String(state.earpiece));
@@ -208,7 +225,7 @@
 
   // Speak the current NPC line aloud (Web Speech API, via LBAudio).
   function speakCurrent(rate) {
-    if (window.LBAudio && inBounds()) window.LBAudio.speakLine(TURNS[state.turn].text, rate);
+    if (window.LBAudio && inBounds()) window.LBAudio.speakLine(TURNS[state.turn].text, rate || state.speakRate);
   }
 
   // Update the localized dialogue content WITHOUT the speaking shimmer
@@ -291,40 +308,94 @@
     if (state.patience <= 0) endScene(false, "conseq.reasonImpatient");
   }, 700);
 
-  /* ---------- Mic / respond loop ---------- */
+  /* ---------- Mic / respond loop (voice scoring) ---------- */
+  const STOP_WORDS = new Set(["a","an","the","i","you","to","of","is","it","please","and","my","me","at","in","on","for","im","i'm"]);
+  function normalize(s) {
+    return (s || "").toLowerCase().replace(/[^a-z0-9\s']/g, " ").replace(/\s+/g, " ").trim();
+  }
+  function expectedPhrase() {
+    const t = currentTurn();
+    return (state.mode === "fluent" || state.mode === "free") ? t.fluent : t.basic;
+  }
+  // Token-coverage accuracy of the transcript against the expected phrase (0..1).
+  function scoreTranscript(transcript, expected) {
+    const exp = normalize(expected).split(" ").filter((w) => w && !STOP_WORDS.has(w));
+    const got = new Set(normalize(transcript).split(" "));
+    if (!exp.length) return transcript ? 0.8 : 0;
+    if (normalize(transcript) === normalize(expected)) return 1;
+    const matched = exp.filter((w) => got.has(w)).length;
+    return matched / exp.length;
+  }
+
   function startListening() {
     if (state.finished || state.listening) return;
     state.listening = true;
+    state.transcript = "";
     micBtn.classList.add("listening");
     micHint.textContent = I18n.t(state.mode === "free" ? "mic.listeningFree" : "mic.listening");
+
+    if (window.LBAudio && window.LBAudio.canListen && window.LBAudio.canListen()) {
+      state.rec = window.LBAudio.startListen({
+        lang: "en-GB",
+        onresult: (t) => { state.transcript = t; },
+        onend: () => { if (state.pendingEval) { state.pendingEval = false; finishSpoken(); } },
+        onerror: () => {},
+      });
+    }
   }
 
   function stopListening() {
     if (!state.listening) return;
     state.listening = false;
     micBtn.classList.remove("listening");
-    evaluateResponse();
+
+    if (state.rec) {
+      state.pendingEval = true;
+      try { state.rec.stop(); } catch (e) {}
+      state.rec = null;
+      // Safety net if onend never fires.
+      setTimeout(() => { if (state.pendingEval) { state.pendingEval = false; finishSpoken(); } }, 1600);
+    } else {
+      // No speech recognition available — fall back to a neutral pass-through.
+      evaluateResponse(0.72, null);
+    }
   }
 
-  function evaluateResponse() {
-    // Illustrative scoring. Real value comes from the AI engine.
-    let gain = state.mode === "free" ? 14 : state.mode === "fluent" ? 10 : 7;
-    const noisePenalty = state.noise > 50 ? 6 : 0;  // NPC mishears in a loud hall
-    const earBonus = state.earpiece ? 4 : 0;
+  function finishSpoken() {
+    const acc = scoreTranscript(state.transcript, expectedPhrase());
+    evaluateResponse(acc, state.transcript);
+  }
 
-    state.patience = Math.min(100, state.patience + 12 + earBonus - noisePenalty);
-    state.xp += gain * (state.mode === "free" ? 1.4 : 1);
+  // accuracy 0..1 from voice scoring. Low score -> the NPC asks you to retry.
+  function evaluateResponse(accuracy, transcript) {
+    const noisePenalty = state.noise > 55 ? 0.12 : 0;   // a loud hall hurts recognition
+    const eff = Math.max(0, Math.min(1, accuracy - noisePenalty));
+    const STEP_PASS = 0.5;
+
+    if (eff < STEP_PASS && state.retries < 2) {
+      state.retries += 1;
+      state.struggleHits += 1;
+      state.patience = Math.max(0, state.patience - 9);
+      micHint.textContent = transcript ? ("“" + transcript + "” — " + I18n.t("mic.retry")) : I18n.t("mic.retry");
+      if (window.LBAudio) window.LBAudio.speakLine(currentTurn().text, 0.72);  // slow, clear retry prompt
+      renderMeters();
+      if (state.patience <= 0) endScene(false, "conseq.reasonImpatient");
+      return; // stay on the same step
+    }
+
+    // Accepted.
+    state.accs.push(eff);
+    if (eff < 0.7) state.struggleHits += 1;
+    const base = state.mode === "free" ? 16 : 11;
+    state.xp += base * (0.5 + eff);
+    state.patience = Math.min(100, state.patience + 6 + eff * 10);
+    state.retries = 0;
     renderMeters();
-
-    // NPC's spoken reactions stay in English (immersion / learning).
-    micHint.textContent = noisePenalty ? "“Sorry? It's loud in here.”" : "Understood.";
+    micHint.textContent = transcript ? ("“" + transcript + "”") : I18n.t(eff > 0.8 ? "mic.great" : "mic.hint");
 
     state.turn += 1;
-    if (state.turn >= TURNS.length) {
-      setTimeout(() => endScene(true), 700);
-    } else {
-      setTimeout(renderTurn, 700);
-    }
+    if (state.turn >= TURNS.length) setTimeout(() => endScene(true), 800);
+    else setTimeout(renderTurn, 800);
   }
 
   // Pointer (mouse + touch) — hold to talk
@@ -345,7 +416,8 @@
     state.finished = true;
     clearInterval(decay);
 
-    const score = Math.round(Math.min(100, 55 + state.patience * 0.4 + state.xp * 0.2));
+    const avgAcc = state.accs.length ? state.accs.reduce((a, b) => a + b, 0) / state.accs.length : 0.7;
+    const score = Math.round(Math.min(100, 38 + avgAcc * 46 + state.patience * 0.16));
     const passedFinal = passed && score >= sceneThreshold;   // scene threshold (>= rules' 80)
 
     state.conseq = { passedFinal: passedFinal, score: score, xp: Math.round(state.xp), reasonKey: reasonKey };
@@ -355,10 +427,12 @@
 
     // Write the result through the Hard Gate. The score we send is aligned
     // to the verdict so Firestore never records a PASS the HUD called a fail.
+    // 'assist' = the learner struggled -> next module loads at a slower tempo.
     try {
       if (window.LBProgress && typeof window.LBProgress.submit === "function") {
         const writeScore = passedFinal ? Math.max(score, 80) : Math.min(score, 79);
-        const res = await window.LBProgress.submit(writeScore);
+        const assist = state.struggleHits >= 2;
+        const res = await window.LBProgress.submit(writeScore, { assist: assist });
         if (res && res.error) console.warn("[LinguoBound] gate rejected write:", res.error);
       }
     } catch (e) { /* offline / rules — UI still shows the verdict */ }

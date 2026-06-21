@@ -147,6 +147,8 @@
       "mic.hint": "Hold the mic to respond",
       "mic.listening": "Listening…",
       "mic.listeningFree": "Listening · Free Flight",
+      "mic.retry": "I didn't catch that. Say it again.",
+      "mic.great": "Perfect!",
 
       /* consequence */
       "conseq.stampAdmitted": "ADMITTED",
@@ -290,6 +292,8 @@
       "mic.hint": "Segure o microfone para responder",
       "mic.listening": "Ouvindo…",
       "mic.listeningFree": "Ouvindo · Voo Livre",
+      "mic.retry": "Não entendi. Fale de novo.",
+      "mic.great": "Perfeito!",
 
       /* consequence */
       "conseq.stampAdmitted": "ADMITIDO",

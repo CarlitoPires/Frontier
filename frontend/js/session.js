@@ -25,7 +25,7 @@
 
 import {
   auth, db, onAuthStateChanged, signOut,
-  doc, getDoc, serverTimestamp, writeBatch, increment, CONFIG_READY,
+  doc, getDoc, setDoc, serverTimestamp, writeBatch, increment, CONFIG_READY,
 } from "./firebase-init.js";
 import { BLOCK0_BY_SEQUENCE } from "./content-block0.js";
 
@@ -49,6 +49,7 @@ import { BLOCK0_BY_SEQUENCE } from "./content-block0.js";
     ready: false,
     uid: null,
     level: "absolute_beginner",
+    assist: false,           // slow-tempo assist when the learner struggled
     unlockedSequence: 1,
     completedCount: 0,
     module: null,            // the module being played on the sim page
@@ -66,7 +67,7 @@ import { BLOCK0_BY_SEQUENCE } from "./content-block0.js";
   }
 
   /* ---------- write a result (attempt + gate advance) ---------- */
-  async function submitResult(score) {
+  async function submitResult(score, opts) {
     const uid = LBProgress.uid;
     const mod = LBProgress.module;
     if (!CONFIG_READY || !uid || !mod) return { passed: score >= PASS_THRESHOLD, written: false };
@@ -74,6 +75,12 @@ import { BLOCK0_BY_SEQUENCE } from "./content-block0.js";
     const passed = score >= PASS_THRESHOLD;
     const modRef = doc(db, "progress", uid, "modules", String(mod.sequence));
     const sumRef = doc(db, "progress", uid);
+
+    // Record the slow-tempo assist flag (display cache; owner-writable).
+    if (opts && typeof opts.assist === "boolean") {
+      LBProgress.assist = opts.assist;
+      try { await setDoc(sumRef, { assistTempo: opts.assist, updatedAt: serverTimestamp() }, { merge: true }); } catch (e) {}
+    }
 
     // Read current state to avoid double-counting on replays.
     let existing = null;
@@ -180,6 +187,7 @@ import { BLOCK0_BY_SEQUENCE } from "./content-block0.js";
     LBProgress.unlockedSequence = unlocked;
     LBProgress.completedCount = completed;
     LBProgress.level = (profile && profile.level) || "absolute_beginner";
+    LBProgress.assist = !!(summary && summary.assistTempo);
 
     // Apply the citizen's saved language.
     if (profile && profile.nativeLang && window.I18n &&
