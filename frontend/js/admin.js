@@ -7,6 +7,7 @@
  * ============================================================ */
 
 import { auth, isAdmin, onAuthStateChanged, signOut, CONFIG_READY } from "./firebase-init.js";
+import { seedCustoms } from "./seed-content.js";
 
 (function () {
   "use strict";
@@ -62,6 +63,23 @@ import { auth, isAdmin, onAuthStateChanged, signOut, CONFIG_READY } from "./fire
       const expanded = parent.classList.toggle("expanded");
       parent.setAttribute("aria-expanded", String(expanded));
     });
+  });
+
+  /* ---------- Content seeder (Customs 1–5) ---------- */
+  const seedBtn = $("seed-customs-btn");
+  const seedStatus = $("seed-status");
+  seedBtn && seedBtn.addEventListener("click", async () => {
+    if (!CONFIG_READY) { if (seedStatus) seedStatus.textContent = "Configure o Firebase primeiro."; return; }
+    seedBtn.disabled = true;
+    if (seedStatus) seedStatus.textContent = "Populando…";
+    try {
+      const n = await seedCustoms();
+      if (seedStatus) seedStatus.textContent = "✓ " + n + " módulos publicados em content/";
+    } catch (e) {
+      if (seedStatus) seedStatus.textContent = "Falhou: " + ((e && e.code) || "erro");
+    } finally {
+      seedBtn.disabled = false;
+    }
   });
 
   /* ---------- Sign out ---------- */

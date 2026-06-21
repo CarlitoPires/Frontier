@@ -23,11 +23,9 @@
 (function () {
   "use strict";
 
-  /* ---------- Scene script ----------
-   * text/basic/fluent: ENGLISH learning content — never translated.
-   * tr:  mental-translation into the UI language (native-language gloss).
-   * ear: pronunciation tip; instruction localized, example sounds kept. */
-  const TURNS = [
+  /* ---------- Default scene (fallback when no content doc) ----------
+   * text/basic/fluent: ENGLISH learning content — never translated. */
+  const DEFAULT_TURNS = [
     {
       text: "Passport. What is the purpose of your visit?",
       tr: {
@@ -73,6 +71,11 @@
   function L(obj) {
     return obj[I18n.getLang()] || obj.en;
   }
+
+  // Active scene (replaced by loadScene when real content arrives).
+  let TURNS = DEFAULT_TURNS;
+  let sceneThreshold = 80;       // must stay >= firestore.rules threshold (80)
+  let sceneTitleObj = null;      // localized {en, pt-BR} when content-driven
 
   /* ---------- State ---------- */
   const state = {
@@ -125,6 +128,50 @@
     sceneRef.seq = mod.sequence;
     sceneRef.block = String(mod.blockId).padStart(2, "0");
     renderSceneMeta();
+    if (mod.content) loadScene(mod.content);
+  }
+
+  function renderSceneTitle() {
+    const t = document.querySelector(".scene-title");
+    if (!t) return;
+    if (sceneTitleObj) { t.removeAttribute("data-i18n"); t.textContent = L(sceneTitleObj); }
+  }
+
+  // Swap in a content-driven scene and reset the run state.
+  function loadScene(content) {
+    if (content && Array.isArray(content.dialogueSteps) && content.dialogueSteps.length) {
+      TURNS = content.dialogueSteps;
+      sceneThreshold = content.threshold || 80;
+      sceneTitleObj = content.sceneTitle || null;
+      if (content.npc) {
+        if (content.npc.name) { const n = el("npc-name"); n.removeAttribute("data-i18n"); n.textContent = L(content.npc.name); }
+        if (content.npc.initials) { const a = el("npc-avatar"); a.removeAttribute("data-i18n"); a.textContent = content.npc.initials; }
+      }
+      const env = content.environment || {};
+      body.classList.toggle("mood-hostile", env.mood === "hostile");
+      body.classList.toggle("mood-pleased", env.mood === "pleased");
+      state.baseNoise = typeof env.baseNoise === "number" ? env.baseNoise : 24;
+    } else {
+      TURNS = DEFAULT_TURNS;
+      sceneThreshold = 80;
+      sceneTitleObj = null;
+      state.baseNoise = 24;
+    }
+    renderSceneTitle();
+
+    // Reset the run for the (re)loaded scene.
+    state.turn = 0; state.patience = 78; state.noise = state.baseNoise;
+    state.mode = "basic"; state.earpiece = false; state.xp = 0;
+    state.listening = false; state.finished = false; state.conseq = null;
+
+    earpiece.hidden = true; earpieceBtn.setAttribute("aria-pressed", "false");
+    document.querySelectorAll(".tp-mode").forEach((b) => b.classList.toggle("active", b.dataset.mode === "basic"));
+    el("consequence").classList.remove("active", "rejected");
+    el("consequence").setAttribute("aria-hidden", "true");
+    npcLine.classList.remove("revealed");
+
+    renderMeters();
+    renderTurn();
   }
 
   function renderMeters() {
@@ -261,7 +308,7 @@
     clearInterval(decay);
 
     const score = Math.round(Math.min(100, 55 + state.patience * 0.4 + state.xp * 0.2));
-    const passedFinal = passed && score >= 80;   // threshold matches firestore.rules
+    const passedFinal = passed && score >= sceneThreshold;   // scene threshold (>= rules' 80)
 
     state.conseq = { passedFinal: passedFinal, score: score, xp: Math.round(state.xp), reasonKey: reasonKey };
 
@@ -314,19 +361,19 @@
   /* ---------- Language change: re-render localized content ---------- */
   window.addEventListener("i18n:change", () => {
     renderSceneMeta();
+    renderSceneTitle();
     renderMeters();
     if (inBounds()) applyTurnContent();
     if (state.finished) renderConsequence();
   });
 
-  /* ---------- Real session: adopt the actual current module ---------- */
+  /* ---------- Real session: adopt the actual current module + content ---------- */
   window.addEventListener("lb:session", () => {
     if (window.LBProgress && window.LBProgress.module) adoptModule(window.LBProgress.module);
   });
 
   /* ---------- Boot ---------- */
-  if (window.LBProgress && window.LBProgress.module) adoptModule(window.LBProgress.module);
   renderSceneMeta();
-  renderMeters();
-  renderTurn();
+  loadScene(null); // default scene until the real module/content arrives
+  if (window.LBProgress && window.LBProgress.module) adoptModule(window.LBProgress.module);
 })();

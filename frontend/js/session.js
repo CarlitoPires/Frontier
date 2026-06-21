@@ -27,6 +27,7 @@ import {
   auth, db, onAuthStateChanged, signOut,
   doc, getDoc, serverTimestamp, writeBatch, increment, CONFIG_READY,
 } from "./firebase-init.js";
+import { CUSTOMS_BY_SEQUENCE } from "./content-customs.js";
 
 (function () {
   "use strict";
@@ -113,6 +114,17 @@ import {
     }
   }
 
+  /* ---------- content loader (Firestore content/{seq} + fallback) ---------- */
+  async function loadContent(seq) {
+    let content = null;
+    try {
+      const c = await getDoc(doc(db, "content", String(seq)));
+      if (c.exists()) content = c.data();
+    } catch (e) { /* not signed in / rules / network */ }
+    if (!content) content = CUSTOMS_BY_SEQUENCE[seq] || null;  // bundled fallback
+    return content;
+  }
+
   /* ---------- read-side Hard Gate (sim page) ---------- */
   async function resolveSimModule(uid, unlocked) {
     const params = new URLSearchParams(window.location.search);
@@ -131,17 +143,22 @@ import {
       if (!ok) { toDashboard(); return null; }   // unearned -> bounce back
     }
 
+    const content = await loadContent(requested);
     return {
       sequence: requested,
       blockId: blockOf(requested),
       indexInBlock: indexInBlock(requested),
-      title: "Customs Control", // placeholder content until the content store lands
+      title: (content && content.sceneTitle && content.sceneTitle.en) || "Module " + requested,
+      content: content,
     };
   }
 
   /* ---------- preview fallback (no Firebase keys) ---------- */
   if (!CONFIG_READY) {
-    if (isSimPage) LBProgress.module = { sequence: 11, blockId: 1, indexInBlock: 11, title: "Customs Control" };
+    if (isSimPage) {
+      const content = CUSTOMS_BY_SEQUENCE[1] || null;
+      LBProgress.module = { sequence: 1, blockId: 1, indexInBlock: 1, title: "Customs", content: content };
+    }
     LBProgress.ready = true;
     hideVeil();
     return;
