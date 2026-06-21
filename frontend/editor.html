@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>LinguoBound · Editor de Conteúdo</title>
+  <link rel="stylesheet" href="css/obsidian.css" />
+  <link rel="stylesheet" href="css/admin.css" />
+  <link rel="stylesheet" href="css/editor.css" />
+</head>
+<body class="admin-body">
+  <div class="atmosphere"></div>
+
+  <!-- Auth gate veil -->
+  <div class="admin-gate" id="admin-gate" hidden>
+    <div class="gate-box glass">
+      <p class="eyebrow">Acesso Restrito</p>
+      <h2 class="display">Editor de Conteúdo</h2>
+      <p class="gate-msg" id="gate-msg">Verificando credenciais…</p>
+      <a class="btn" href="index.html">Voltar ao app</a>
+    </div>
+  </div>
+
+  <div class="ed-shell" id="ed-shell">
+    <!-- Top bar -->
+    <header class="ed-topbar">
+      <div class="ed-brand">
+        <span class="display">LinguoBound</span>
+        <span class="eyebrow">Editor de Conteúdo</span>
+      </div>
+      <div class="ed-load">
+        <label class="ed-inline">
+          <span>Módulo</span>
+          <input type="number" id="load-seq" min="1" max="500" value="21" />
+        </label>
+        <button class="btn btn-ghost" id="load-btn">Carregar</button>
+        <button class="btn btn-ghost" id="new-btn">Novo</button>
+      </div>
+      <div class="ed-actions">
+        <a class="btn btn-ghost" href="admin.html">← Painel</a>
+        <button class="btn btn-gold" id="save-btn">Salvar em content/</button>
+      </div>
+    </header>
+
+    <p class="ed-status" id="ed-status"></p>
+
+    <main class="ed-main">
+      <!-- ===== Meta ===== -->
+      <section class="card glass ed-section">
+        <h3 class="card-title">Identificação</h3>
+        <div class="ed-grid">
+          <label>Sequência (1–500)<input type="number" id="f-seq" min="1" max="500" /></label>
+          <label>Fase<select id="f-phase"><option value="1">1 · Voo</option><option value="2">2 · Pouso/Imigração</option><option value="3">3 · Chegada/Cidade</option></select></label>
+          <label>Bloco<input type="number" id="f-block" min="1" max="20" /></label>
+          <label>Índice no bloco<input type="number" id="f-index" min="1" max="25" /></label>
+          <label>Threshold (≥ 80)<input type="number" id="f-threshold" min="80" max="100" value="80" /></label>
+        </div>
+      </section>
+
+      <!-- ===== Scene ===== -->
+      <section class="card glass ed-section">
+        <h3 class="card-title">Cena</h3>
+        <div class="ed-grid two">
+          <label>Título da cena (EN)<input type="text" id="f-title-en" placeholder="Customs — First Contact" /></label>
+          <label>Título da cena (PT)<input type="text" id="f-title-pt" placeholder="Imigração — Primeiro Contato" /></label>
+        </div>
+        <div class="ed-grid two">
+          <label>Ambiente / contexto (EN)<textarea id="f-context-en" rows="3" placeholder="Engine roar, narrow cabin…"></textarea></label>
+          <label>Ambiente / contexto (PT)<textarea id="f-context-pt" rows="3" placeholder="Ronco das turbinas, cabine estreita…"></textarea></label>
+        </div>
+        <div class="ed-grid two">
+          <label>Objetivo / lógica de ensino (EN)<textarea id="f-obj-en" rows="2"></textarea></label>
+          <label>Objetivo / lógica de ensino (PT)<textarea id="f-obj-pt" rows="2"></textarea></label>
+        </div>
+      </section>
+
+      <!-- ===== Environment + NPC ===== -->
+      <section class="card glass ed-section">
+        <h3 class="card-title">Ambiente sonoro &amp; NPC</h3>
+        <div class="ed-grid">
+          <label>Clima (mood)<select id="f-mood"><option value="neutral">Neutro</option><option value="hostile">Hostil</option><option value="pleased">Amistoso</option></select></label>
+          <label>Ruído base <output id="f-noise-out">40</output><input type="range" id="f-noise" min="0" max="100" value="40" /></label>
+          <label>NPC — nome (EN)<input type="text" id="f-npc-en" placeholder="Border Officer" /></label>
+          <label>NPC — nome (PT)<input type="text" id="f-npc-pt" placeholder="Oficial de Fronteira" /></label>
+          <label>NPC — iniciais<input type="text" id="f-npc-initials" maxlength="3" placeholder="BO" /></label>
+        </div>
+      </section>
+
+      <!-- ===== Drills ===== -->
+      <section class="card glass ed-section">
+        <div class="sec-head"><h3 class="card-title">Drills de fonética</h3><button class="btn btn-ghost sm" id="add-drill">+ Drill</button></div>
+        <div id="drills"></div>
+      </section>
+
+      <!-- ===== Dialogue steps ===== -->
+      <section class="card glass ed-section">
+        <div class="sec-head"><h3 class="card-title">Passos de diálogo</h3><button class="btn btn-ghost sm" id="add-step">+ Passo</button></div>
+        <div id="steps"></div>
+      </section>
+
+      <div class="ed-footer">
+        <a class="btn btn-ghost" id="play-link" href="#" target="_blank" rel="noopener">▶ Testar no simulador</a>
+        <button class="btn btn-gold" id="save-btn-2">Salvar em content/</button>
+      </div>
+    </main>
+  </div>
+
+  <script type="module" src="js/editor.js"></script>
+</body>
+</html>

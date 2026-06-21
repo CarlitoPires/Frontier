@@ -1,0 +1,87 @@
+/* ============================================================
+   LinguoBound — Content Editor (the factory)
+   ============================================================ */
+
+.ed-shell { min-height: 100vh; display: flex; flex-direction: column; }
+
+.ed-topbar {
+  position: sticky; top: 0; z-index: 20;
+  display: flex; align-items: center; gap: 18px; flex-wrap: wrap;
+  padding: 16px clamp(16px, 2vw, 40px);
+  background: rgba(5,5,6,0.66);
+  border-bottom: 1px solid var(--glass-stroke);
+  backdrop-filter: blur(18px); -webkit-backdrop-filter: blur(18px);
+}
+.ed-brand { display: flex; flex-direction: column; line-height: 1.2; }
+.ed-brand .display { font-size: 19px; color: var(--ink-100); }
+.ed-brand .eyebrow { color: var(--gold-soft); margin-top: 2px; }
+.ed-load { display: flex; align-items: center; gap: 10px; }
+.ed-actions { margin-left: auto; display: flex; gap: 10px; }
+.ed-inline { display: flex; align-items: center; gap: 8px; font-size: 12px; color: var(--ink-500); }
+.ed-inline input { width: 84px; }
+
+.ed-status { min-height: 20px; padding: 8px clamp(16px, 2vw, 40px) 0; font-size: 13px; color: var(--gold-soft); }
+.ed-status.err { color: var(--signal-warn); }
+
+.ed-main {
+  width: 100%; max-width: 1100px; margin-inline: auto;
+  padding: clamp(14px, 1.6vw, 30px);
+  display: flex; flex-direction: column; gap: clamp(14px, 1.5vw, 22px);
+}
+.ed-section { padding: clamp(18px, 1.5vw, 28px); }
+.sec-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
+.card-title { font-size: 15px; color: var(--ink-100); font-family: var(--font-display); }
+
+/* Inputs */
+.ed-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 14px; }
+.ed-grid.two { grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); }
+.ed-section label, .step-card label, .drill-row label {
+  display: flex; flex-direction: column; gap: 6px;
+  font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-500);
+}
+.ed-section input, .ed-section select, .ed-section textarea,
+.step-card input, .drill-row input {
+  background: var(--slate-900); border: 1px solid var(--glass-stroke);
+  border-radius: 10px; color: var(--ink-100); font-family: var(--font-body);
+  font-size: 14px; padding: 11px 12px; outline: none; width: 100%;
+  text-transform: none; letter-spacing: normal;
+  transition: border-color var(--dur-fast) var(--ease-soft);
+}
+.ed-section input:focus, .ed-section select:focus, .ed-section textarea:focus,
+.step-card input:focus, .drill-row input:focus { border-color: var(--gold-matte); }
+.ed-section textarea { resize: vertical; line-height: 1.5; }
+output#f-noise-out { color: var(--gold-soft); font-variant-numeric: tabular-nums; }
+
+/* Drills */
+.drill-row {
+  display: grid; grid-template-columns: 1fr 1fr 1.4fr 1.4fr auto; gap: 10px; align-items: end;
+  padding: 12px; border: 1px solid var(--glass-stroke); border-radius: 12px;
+  background: var(--slate-900); margin-bottom: 10px;
+}
+
+/* Steps */
+.step-card {
+  border: 1px solid var(--glass-stroke); border-left: 2px solid var(--gold-matte);
+  border-radius: 12px; background: var(--slate-900);
+  padding: 16px; margin-bottom: 14px; display: flex; flex-direction: column; gap: 12px;
+}
+.step-head { display: flex; align-items: center; justify-content: space-between; }
+.step-head .step-no { font-size: 12px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--gold-soft); }
+.step-head .step-ctl { display: flex; gap: 6px; }
+.icon-btn {
+  width: 32px; height: 32px; border-radius: 9px; cursor: pointer;
+  background: var(--slate-800); border: 1px solid var(--glass-stroke);
+  color: var(--ink-300); font-size: 13px;
+}
+.icon-btn:hover { border-color: var(--gold-matte); color: var(--ink-100); }
+.icon-btn.del:hover { border-color: var(--signal-warn); color: var(--signal-warn); }
+.two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+
+.ed-footer { display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap; padding-bottom: 40px; }
+.btn-ghost.sm { padding: 8px 14px; font-size: 11px; }
+
+@media (max-width: 640px) {
+  .drill-row { grid-template-columns: 1fr 1fr; }
+  .two-col { grid-template-columns: 1fr; }
+  .ed-actions { margin-left: 0; }
+}
