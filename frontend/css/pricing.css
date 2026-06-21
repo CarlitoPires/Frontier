@@ -240,3 +240,11 @@
 .lp-section-cta { text-align: center; margin-top: 38px; display: flex; flex-direction: column; align-items: center; gap: 18px; }
 .lp-section-cta .lp-lead { margin: 0; color: var(--ink-300); }
 .lp-section-cta .lp-cta-lg { text-decoration: none; }
+
+
+/* ---------- Checkout CPF field (Asaas) ---------- */
+.co-cpf-label { display: block; margin: 12px 0 6px; font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-500); }
+.co-cpf { width: 100%; padding: 12px 14px; border-radius: var(--radius); background: var(--slate-900); border: 1px solid var(--glass-stroke); color: var(--ink-100); font-family: var(--font-body); font-size: 15px; transition: border-color var(--dur-fast) var(--ease-soft); }
+.co-cpf:focus { outline: none; border-color: var(--gold-matte); }
+.co-cpf::placeholder { color: var(--ink-700); }
+.co-cpf-hint { color: var(--ink-700); font-size: 11px; line-height: 1.5; margin-top: 6px; }

@@ -123,17 +123,17 @@ service cloud.firestore {
       allow write: if isAdmin();
     }
 
-    // ---------- Checkout orders (Mercado Pago) ----------
+    // ---------- Checkout orders (Asaas) ----------
     // A citizen records their OWN purchase INTENT here before being sent
-    // to Mercado Pago's hosted checkout. This grants NO access on its own.
+    // to Asaas's hosted payment page. This grants NO access on its own.
     //
     // The buyer may create/read their order and may only ever set a
     // client-side status of 'initiated' or 'abandoned'. The authoritative
-    // paid/failed status — and the actual plan upgrade on users/{uid} —
-    // is written ONLY by the trusted Mercado Pago webhook via the Admin
-    // SDK (which bypasses these rules). Clients can never self-promote:
-    // the users/{uid} rule pins 'plan' and 'subscription' to their prior
-    // value for non-admins.
+    // statuses (awaiting_payment / paid / past_due / revoked) and the actual
+    // plan upgrade on users/{uid} are written ONLY by the trusted Asaas
+    // server functions via the Admin SDK (which bypasses these rules).
+    // Clients can never self-promote: the users/{uid} rule pins 'plan' and
+    // 'subscription' to their prior value for non-admins.
     match /orders/{orderId} {
       allow read: if isAdmin()
         || (isSignedIn() && resource.data.uid == request.auth.uid);

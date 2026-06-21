@@ -1,56 +1,49 @@
 /* ============================================================
- *  LinguoBound — Payments configuration (Mercado Pago)
+ *  LinguoBound — Payments configuration (Asaas)
  *
- *  SAFE TO COMMIT: this file holds only PUBLIC identifiers and the
- *  hosted-checkout links you generate in your Mercado Pago dashboard.
- *  The Mercado Pago **Access Token** is a SECRET and must live ONLY on
- *  the server (see functions/mercadopago-webhook.js). Never put it here.
+ *  Strategic pivot: Asaas is our billing engine — a Brazilian platform
+ *  specialised in recurring SaaS subscriptions (PIX, card, boleto) with
+ *  strong institutional trust.
  *
- *  WHY hosted checkout links (Checkout Pro / Assinaturas)?
- *  The project runs on Firebase Spark (no backend at runtime). Creating
- *  card payments requires the secret access token, which cannot be
- *  exposed in the browser. So the in-app checkout collects the order,
- *  then hands off to Mercado Pago's PCI-compliant hosted page (which
- *  supports BOTH PIX and credit card). The tier is granted only by the
- *  server webhook after Mercado Pago confirms payment.
+ *  SAFE TO COMMIT: this file holds only PUBLIC config — the URL of your
+ *  serverless endpoints and the display catalog. The Asaas **API key**
+ *  is a SECRET and lives ONLY on the server (functions/asaas-*.js).
+ *  Never put the API key in the browser.
  *
- *  HOW TO WIRE (one-time, in the Mercado Pago dashboard):
- *   1. Create a subscription plan (Assinaturas) OR a payment link for
- *      each PLAN + BILLING below, and paste its checkout URL into
- *      `checkoutUrl`.
- *   2. In each link's settings, set the back/return URL to:
- *         https://<your-site>/pricing.html   (RETURN_PATH below)
- *      Mercado Pago appends ?status=approved|pending|failure &
- *      external_reference=<orderId> on return.
- *   3. Paste your PUBLIC key into MP_PUBLIC_KEY (used only if you later
- *      upgrade to embedded Bricks; not required for hosted checkout).
+ *  WHY a server endpoint? Creating an Asaas customer + subscription
+ *  requires the secret API key, which cannot reach the browser. So the
+ *  in-app checkout collects the order and calls our `asaas-create-
+ *  subscription` endpoint, which creates the subscription and returns
+ *  the hosted `invoiceUrl` (Asaas's PCI-compliant payment page,
+ *  supporting PIX + card + boleto). The 'pro' tier is granted only by
+ *  the Asaas webhook after payment is confirmed/received.
  * ============================================================ */
 
 export const PAYMENTS_CONFIG = {
-  provider: "mercadopago",
+  provider: "asaas",
   currency: "BRL",
   locale: "pt-BR",
 
-  // Public, publishable key (NOT the secret access token). Optional for
-  // hosted checkout. Replace with your real APP_USR-/TEST- public key.
-  MP_PUBLIC_KEY: "APP_USR-PUBLIC-KEY-REPLACE-ME",
+  // Base URL of your deployed serverless functions (Cloud Run / Render /
+  // Cloud Functions). Endpoints expected under this base:
+  //   POST {FUNCTIONS_BASE}/asaas-create-subscription
+  //   POST {FUNCTIONS_BASE}/asaas-webhook   (configured in Asaas dashboard)
+  FUNCTIONS_BASE: "https://REPLACE-with-your-functions-host",
 
-  // Where Mercado Pago returns the buyer after payment.
+  // Where Asaas returns the buyer after payment (callback.successUrl).
   RETURN_PATH: "pricing.html",
 
-  // True once you've pasted real checkout links below.
   isConfigured() {
-    return Object.values(this.plans).some(
-      (p) => p.checkoutUrl && p.checkoutUrl.indexOf("REPLACE") === -1
-    );
+    return this.FUNCTIONS_BASE && this.FUNCTIONS_BASE.indexOf("REPLACE") === -1;
   },
 };
 
 /* --------------------------------------------------------------
  * PLAN CATALOG (value-based pricing — see strategy memo).
- * `tier` is what the webhook writes to users/{uid}.plan.
- * `priceCents` is for display + analytics only; the real charge is
- * defined by the Mercado Pago link/plan you create.
+ *  - `tier`      : what the webhook writes to users/{uid}.plan
+ *  - `cycle`     : Asaas subscription cycle (MONTHLY | YEARLY)
+ *  - `valueReais`: the charge amount sent to Asaas (BRL)
+ *  - display fields are for the UI only
  * -------------------------------------------------------------- */
 export const PLANS = {
   resident_monthly: {
@@ -59,11 +52,12 @@ export const PLANS = {
     nameKey: "lp.planResName",
     taglineKey: "lp.planResTagline",
     billing: "monthly",
-    priceCents: 4990,            // R$ 49,90 / month
+    cycle: "MONTHLY",
+    valueReais: 49.90,
+    priceCents: 4990,
     displayPrice: "R$ 49,90",
     perKey: "lp.perMonth",
     features: ["lp.featAllModules", "lp.featVisa", "lp.featRadar", "lp.featCert"],
-    checkoutUrl: "https://www.mercadopago.com.br/REPLACE-resident-monthly",
   },
   citizen_annual: {
     id: "citizen_annual",
@@ -71,13 +65,14 @@ export const PLANS = {
     nameKey: "lp.planCitName",
     taglineKey: "lp.planCitTagline",
     billing: "annual",
+    cycle: "YEARLY",
     recommended: true,
-    priceCents: 39700,           // R$ 397/yr  (≈ R$ 33,08/mo — 34% off)
+    valueReais: 397.00,
+    priceCents: 39700,
     displayPrice: "R$ 397",
     perKey: "lp.perYear",
     equivPerMonth: "R$ 33,08",
     features: ["lp.featAllModules", "lp.featVisa", "lp.featRadar", "lp.featCert", "lp.featPriority"],
-    checkoutUrl: "https://www.mercadopago.com.br/REPLACE-citizen-annual",
   },
   global_annual: {
     id: "global_annual",
@@ -85,14 +80,17 @@ export const PLANS = {
     nameKey: "lp.planGloName",
     taglineKey: "lp.planGloTagline",
     billing: "annual",
-    priceCents: 59700,           // R$ 597/yr  (≈ R$ 49,75/mo)
+    cycle: "YEARLY",
+    valueReais: 597.00,
+    priceCents: 59700,
     displayPrice: "R$ 597",
     perKey: "lp.perYear",
     equivPerMonth: "R$ 49,75",
     features: ["lp.featTwoCities", "lp.featVisa", "lp.featRadar", "lp.featCert", "lp.featPriority", "lp.featConcierge"],
-    checkoutUrl: "https://www.mercadopago.com.br/REPLACE-global-annual",
   },
 };
 
-// Default plan highlighted on load.
+// Map our UI method selector -> Asaas billingType.
+export const BILLING_TYPES = { pix: "PIX", card: "CREDIT_CARD" };
+
 export const DEFAULT_PLAN_ID = "citizen_annual";

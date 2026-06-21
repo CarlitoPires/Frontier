@@ -1,32 +1,32 @@
 /* ============================================================
- *  LinguoBound — Checkout engine (Mercado Pago + Firestore)
+ *  LinguoBound — Checkout engine (Asaas + Firestore)
  *
- *  FLOW (Spark-friendly, secure):
+ *  FLOW (secure, recurring-SaaS):
  *   1. User picks a plan -> openCheckout(planId).
- *   2. Must be a signed-in citizen (we link the order to their uid).
+ *   2. Must be a signed-in citizen (we link the subscription to their uid).
  *   3. We write an ORDER INTENT to orders/{orderId} (owner-writable;
- *      see firestore.rules). This is just intent — NOT access.
- *   4. We hand off to Mercado Pago's PCI-compliant hosted checkout
- *      (supports PIX + credit card), passing external_reference=orderId
- *      and a back_url that returns here.
- *   5. Mercado Pago confirms the payment to a SERVER WEBHOOK
- *      (functions/mercadopago-webhook.js). The webhook — using the
- *      Admin SDK — is the ONLY thing allowed to set users/{uid}.plan
- *      = "pro". Clients cannot self-promote (Firestore rules enforce it).
- *   6. On return, we poll users/{uid} until the webhook flips the plan,
- *      then show success.
+ *      grants NO access by itself — see firestore.rules).
+ *   4. We call our serverless endpoint `asaas-create-subscription`, which
+ *      (using the SECRET Asaas API key, server-side) creates/gets the
+ *      Asaas customer + subscription and returns the hosted `invoiceUrl`
+ *      (Asaas's PCI-compliant page: PIX + card + boleto).
+ *   5. We redirect to the invoiceUrl. Asaas notifies our `asaas-webhook`
+ *      on PAYMENT_CONFIRMED / PAYMENT_RECEIVED. The webhook — via the
+ *      Admin SDK — is the ONLY thing allowed to set users/{uid}.plan.
+ *      Clients can never self-promote (Firestore rules enforce it).
+ *   6. On return, a realtime users/{uid} listener flips the UI to success
+ *      the instant the webhook grants the tier.
  *
- *  WHY no in-page card form? Charging a card needs the secret access
- *  token, which must never reach the browser. Hosted checkout keeps us
- *  PCI-safe with zero backend at runtime. Everything UP TO the hand-off
- *  is fully in-brand.
+ *  Charging a card needs the secret API key, which must never reach the
+ *  browser — so subscription creation is server-side and payment happens
+ *  on Asaas's hosted page. Everything UP TO the hand-off is fully in-brand.
  * ============================================================ */
 
 import {
   auth, db, onAuthStateChanged,
   doc, getDoc, setDoc, serverTimestamp, onSnapshot, CONFIG_READY,
 } from "./firebase-init.js";
-import { PLANS, DEFAULT_PLAN_ID, PAYMENTS_CONFIG } from "./payments-config.js";
+import { PLANS, DEFAULT_PLAN_ID, PAYMENTS_CONFIG, BILLING_TYPES } from "./payments-config.js";
 
 (function () {
   "use strict";
@@ -67,13 +67,10 @@ import { PLANS, DEFAULT_PLAN_ID, PAYMENTS_CONFIG } from "./payments-config.js";
     $("co-plan-price").textContent = plan.displayPrice + " " + t(plan.perKey);
     $("co-recurring").textContent = t("pay.recurring", { plan: t(plan.nameKey) });
 
-    // payment-method segmented control
     document.querySelectorAll(".co-method").forEach((b) => {
-      const on = b.dataset.method === selectedMethod;
-      b.classList.toggle("active", on);
+      b.classList.toggle("active", b.dataset.method === selectedMethod);
     });
 
-    // identity / auth gate
     const acct = $("co-account");
     const loginBtn = $("co-login-btn");
     const payBtn = $("co-pay");
@@ -96,14 +93,12 @@ import { PLANS, DEFAULT_PLAN_ID, PAYMENTS_CONFIG } from "./payments-config.js";
   /* ---------- public API ---------- */
   function openCheckout(planId) {
     if (planId && PLANS[planId]) selectedPlanId = planId;
-
-    // Already pro? Send them to the dashboard instead of charging again.
     if (currentProfile && (currentProfile.plan === "pro" || currentProfile.plan === "pro_global")) {
       window.location.href = "dashboard.html";
       return;
     }
     if (!currentUser && CONFIG_READY) {
-      stashPending();                          // remember choice through login
+      stashPending();
       showState("needlogin");
       openModal();
       return;
@@ -118,79 +113,95 @@ import { PLANS, DEFAULT_PLAN_ID, PAYMENTS_CONFIG } from "./payments-config.js";
     try { localStorage.setItem(PENDING_KEY, JSON.stringify({ planId: selectedPlanId, method: selectedMethod })); } catch (e) {}
   }
 
-  /* ---------- pay: write order intent, hand off to Mercado Pago ---------- */
+  function cpfDigits() {
+    const el = $("co-cpf");
+    return el ? (el.value || "").replace(/\D/g, "") : "";
+  }
+
+  /* ---------- pay: write intent -> create Asaas subscription -> redirect ---------- */
   $("co-pay") && $("co-pay").addEventListener("click", async () => {
     const plan = PLANS[selectedPlanId];
     if (!plan || !currentUser) return;
 
     const orderId = currentUser.uid + "-" + Date.now().toString(36);
+    const billingType = BILLING_TYPES[selectedMethod] || "UNDEFINED";
     showState("redirecting");
 
-    // 1) Record the intent (owner-writable; grants NO access by itself).
-    //    This MUST succeed when Firebase is live, because the webhook maps
-    //    the payment back to the user via this order (external_reference).
+    // 1) Record intent (owner-writable). The webhook maps payment -> uid
+    //    via this order's externalReference, so it MUST succeed.
     if (CONFIG_READY) {
       try {
         await setDoc(doc(db, "orders", orderId), {
           uid: currentUser.uid,
           email: currentUser.email || (currentProfile && currentProfile.email) || null,
           planId: plan.id,
-          tier: plan.tier,                     // what the webhook will grant
+          tier: plan.tier,
           billing: plan.billing,
+          cycle: plan.cycle,
           amountCents: plan.priceCents,
           currency: PAYMENTS_CONFIG.currency,
           method: selectedMethod,
-          provider: "mercadopago",
-          status: "initiated",                 // webhook flips to paid/failed
+          billingType: billingType,
+          provider: "asaas",
+          status: "initiated",
           createdAt: serverTimestamp(),
         });
       } catch (e) {
-        // Without the order doc the webhook can't grant the tier — fail
-        // closed and keep the user informed rather than charging blindly.
         console.warn("[checkout] order intent write failed:", e && e.code);
         showState("failed");
         return;
       }
     }
 
-    try { localStorage.setItem(PENDING_KEY, JSON.stringify({ planId: plan.id, orderId: orderId, method: selectedMethod })); } catch (e) {}
-
-    // 2) Hand off to Mercado Pago hosted checkout (PIX + card).
-    const base = plan.checkoutUrl || "";
-    if (!base || base.indexOf("REPLACE") !== -1) {
-      // Links not wired yet — surface clearly instead of a broken redirect.
-      alert(t("pay.redirecting") + "\n\n[Mercado Pago checkout link not configured — see payments-config.js]");
+    // 2) Ask the server to create the Asaas subscription (secret key).
+    if (!PAYMENTS_CONFIG.isConfigured()) {
+      alert(t("pay.redirecting") + "\n\n[Asaas functions host not configured — see payments-config.js / docs/ASAAS_SETUP.md]");
       showState("form");
       return;
     }
-    const ret = location.origin + location.pathname.replace(/[^/]*$/, "") + PAYMENTS_CONFIG.RETURN_PATH;
-    const sep = base.indexOf("?") === -1 ? "?" : "&";
-    const url = base + sep +
-      "external_reference=" + encodeURIComponent(orderId) +
-      "&back_url=" + encodeURIComponent(ret) +
-      "&preference_method=" + encodeURIComponent(selectedMethod);
-    window.location.href = url;
+
+    const returnUrl = location.origin + location.pathname.replace(/[^/]*$/, "") +
+      PAYMENTS_CONFIG.RETURN_PATH + "?asaas=return";
+
+    try {
+      localStorage.setItem(PENDING_KEY, JSON.stringify({ planId: plan.id, orderId: orderId, method: selectedMethod, awaiting: true }));
+    } catch (e) {}
+
+    try {
+      const resp = await fetch(PAYMENTS_CONFIG.FUNCTIONS_BASE.replace(/\/$/, "") + "/asaas-create-subscription", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          orderId: orderId,
+          uid: currentUser.uid,
+          planId: plan.id,
+          billingType: billingType,
+          email: currentUser.email || (currentProfile && currentProfile.email) || null,
+          name: (currentProfile && currentProfile.name) || (currentUser.displayName) || null,
+          cpfCnpj: cpfDigits() || null,
+          returnUrl: returnUrl,
+        }),
+      });
+      const data = await resp.json().catch(() => ({}));
+      if (!resp.ok || !data.invoiceUrl) throw new Error(data.error || ("HTTP " + resp.status));
+      window.location.href = data.invoiceUrl;          // -> Asaas hosted page
+    } catch (e) {
+      console.warn("[checkout] asaas-create-subscription failed:", e && e.message);
+      showState("failed");
+    }
   });
 
   $("co-retry") && $("co-retry").addEventListener("click", () => { showState("form"); renderForm(); });
 
-  /* ---------- return from Mercado Pago: confirm via webhook-updated tier ---------- */
-  function readReturnStatus() {
+  /* ---------- return from Asaas: confirm via webhook-granted tier ---------- */
+  function isReturn() {
     const p = new URLSearchParams(location.search);
-    // Mercado Pago may use status / collection_status depending on link type.
-    const raw = (p.get("status") || p.get("collection_status") || "").toLowerCase();
-    const extRef = p.get("external_reference") || "";
-    if (!raw) return null;
-    let kind = "failed";
-    if (raw === "approved" || raw === "success") kind = "approved";
-    else if (raw === "pending" || raw === "in_process") kind = "pending";
-    else if (raw === "failure" || raw === "rejected" || raw === "cancelled" || raw === "null") kind = "failed";
-    return { kind, extRef };
+    if (p.get("asaas") === "return") return true;
+    // Fallback: a pending redirect flag set just before leaving.
+    try { const s = JSON.parse(localStorage.getItem(PENDING_KEY) || "null"); return !!(s && s.awaiting); } catch (e) { return false; }
   }
 
   async function pollTierUpgrade(maxMs) {
-    // Fallback path if the realtime listener can't attach (rules/network):
-    // the webhook sets users/{uid}.plan once Mercado Pago confirms payment.
     const deadline = Date.now() + (maxMs || 25000);
     while (Date.now() < deadline) {
       try {
@@ -199,28 +210,16 @@ import { PLANS, DEFAULT_PLAN_ID, PAYMENTS_CONFIG } from "./payments-config.js";
           const plan = snap.data().plan;
           if (plan === "pro" || plan === "pro_global") { unlockLocalTier(plan); return true; }
         }
-      } catch (e) { /* keep trying */ }
+      } catch (e) {}
       await new Promise((r) => setTimeout(r, 2500));
     }
     return false;
   }
 
-  /**
-   * Real-time tier watcher. Reacts the instant the server webhook flips
-   * users/{uid}.plan to a paid tier — no manual refresh. Resolves true on
-   * upgrade, false on timeout (-> pending state). Falls back to polling if
-   * the snapshot listener errors.
-   */
   function listenForUpgrade(maxMs) {
     return new Promise((resolve) => {
-      let settled = false;
-      let unsub = null;
-      const finish = (val) => {
-        if (settled) return; settled = true;
-        if (unsub) { try { unsub(); } catch (e) {} }
-        clearTimeout(timer);
-        resolve(val);
-      };
+      let settled = false, unsub = null;
+      const finish = (val) => { if (settled) return; settled = true; if (unsub) { try { unsub(); } catch (e) {} } clearTimeout(timer); resolve(val); };
       const timer = setTimeout(() => finish(false), maxMs || 30000);
       try {
         unsub = onSnapshot(
@@ -230,73 +229,52 @@ import { PLANS, DEFAULT_PLAN_ID, PAYMENTS_CONFIG } from "./payments-config.js";
             const plan = snap.data().plan;
             if (plan === "pro" || plan === "pro_global") { unlockLocalTier(plan); finish(true); }
           },
-          () => { // listener error -> degrade to polling
-            pollTierUpgrade((maxMs || 30000)).then(finish);
-          }
+          () => { pollTierUpgrade(maxMs || 30000).then(finish); }
         );
-      } catch (e) {
-        pollTierUpgrade((maxMs || 30000)).then(finish);
-      }
+      } catch (e) { pollTierUpgrade(maxMs || 30000).then(finish); }
     });
   }
 
-  /** Reflect the unlocked tier in the live local session immediately. */
   function unlockLocalTier(plan) {
     if (currentProfile) currentProfile.plan = plan;
-    try {
-      if (window.LB_SESSION && window.LB_SESSION.profile) window.LB_SESSION.profile.plan = plan;
-    } catch (e) {}
-    // Let the rest of the app (dashboard chrome, etc.) react instantly.
+    try { if (window.LB_SESSION && window.LB_SESSION.profile) window.LB_SESSION.profile.plan = plan; } catch (e) {}
     window.dispatchEvent(new CustomEvent("lb:upgraded", { detail: { plan: plan } }));
   }
 
-  async function handleReturn(ret) {
+  async function handleReturn() {
     openModal();
-    if (ret.kind === "failed") { showState("failed"); cleanUrl(); return; }
-
-    // approved or pending: confirm the server-side tier grant in real time.
     showState("confirming");
     if (!CONFIG_READY || !currentUser) { showState("pending"); cleanUrl(); return; }
-    const upgraded = await listenForUpgrade(ret.kind === "approved" ? 35000 : 15000);
+    const upgraded = await listenForUpgrade(35000);
     showState(upgraded ? "success" : "pending");
     try { localStorage.removeItem(PENDING_KEY); } catch (e) {}
     cleanUrl();
-    // Seamless hand-off: Nightmare (landing) -> Control (Command Center).
     if (upgraded) seamlessEnterCity();
   }
 
-  /** Cinematic redirect into the app once Pro is unlocked. */
   function seamlessEnterCity() {
     setTimeout(() => {
       document.body.style.transition = "opacity 600ms var(--ease-cine)";
       document.body.style.opacity = "0";
       setTimeout(() => { window.location.href = "dashboard.html"; }, 560);
-    }, 1900);   // let the "Welcome, Citizen" visa-stamp land first
+    }, 1900);
   }
 
-  function cleanUrl() {
-    try { history.replaceState({}, document.title, location.pathname); } catch (e) {}
-  }
+  function cleanUrl() { try { history.replaceState({}, document.title, location.pathname); } catch (e) {} }
 
   /* ---------- boot ---------- */
-  const pendingReturn = readReturnStatus();
+  const returning = isReturn();
 
   function finishBoot() {
-    // Restore a plan choice the user made before logging in.
     try {
       const saved = JSON.parse(localStorage.getItem(PENDING_KEY) || "null");
       if (saved && saved.planId && PLANS[saved.planId]) selectedPlanId = saved.planId;
       if (saved && saved.method) selectedMethod = saved.method;
     } catch (e) {}
-    if (pendingReturn) handleReturn(pendingReturn);
+    if (returning) handleReturn();
   }
 
-  if (!CONFIG_READY) {
-    // Preview mode (no Firebase keys): UI still fully demoable.
-    currentUser = null; currentProfile = null;
-    finishBoot();
-    return;
-  }
+  if (!CONFIG_READY) { currentUser = null; currentProfile = null; finishBoot(); return; }
 
   onAuthStateChanged(auth, async (user) => {
     currentUser = user || null;
@@ -308,6 +286,5 @@ import { PLANS, DEFAULT_PLAN_ID, PAYMENTS_CONFIG } from "./payments-config.js";
     finishBoot();
   });
 
-  // Re-render labels when language changes.
   window.addEventListener("i18n:change", () => { if (overlay.classList.contains("open")) renderForm(); });
 })();
