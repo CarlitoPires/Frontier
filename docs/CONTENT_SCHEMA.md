@@ -32,6 +32,9 @@ never shows an empty scene.
 
   // OPTIONAL (used by Block Zero / beginner pedagogy)
   "phase": 1,                                 // narrative phase: 1 Flight · 2 Landing · 3 Arrival
+  "subBlock": "1.1",                          // narrative sub-block label
+  "kind": "bonus",                            // optional; marks a Side Quest / Bonus module
+  "triggerSelfieShare": true,                 // optional; on victory, opens camera + Web Share
   "objective": { "en": "...", "pt-BR": "..." }, // the teaching logic: what this module teaches from zero
   "drills": [                                  // phonetic / survival repetition items
     { "word": "excuse me", "say": "iks-KIÚZ mi", "note": { "en": "...", "pt-BR": "..." } }

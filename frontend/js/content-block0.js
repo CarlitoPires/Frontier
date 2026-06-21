@@ -1,698 +1,432 @@
 /* ============================================================
- *  LinguoBound — City 01: London Immersion
- *  BLOCK ZERO — "The Survival Journey" (Modules 01–20)
+ *  LinguoBound — City 01: London · BLOCK 01 (Modules 01–25)
+ *  "The Survival Arc" — 5 narrative sub-blocks:
+ *    1.1 The Flight        (01–05)  cabin survival
+ *    1.2 Hostile Customs   (06–10)  passport / financial interrogation
+ *    1.3 Baggage Chaos     (11–15)  lost luggage / describing bags / toilet
+ *    1.4 Connection        (16–20)  UK SIM card / data plan / activation
+ *    1.5 Escape & Reward   (21–25)  Tube / Oyster / broken machine / BONUS
  *
- *  Narrative arc (you do not leave the plane until you can survive):
- *    Phase 1 — The Flight (cabin survival)            modules 01–12
- *    Phase 2 — The Landing/Arrival (customs/baggage)  modules 13–16
- *    Phase 3 — Arrival (transport/hotel/food/help)    modules 17–20
+ *  Supports the 3-level pedagogy engine (HUD adapts):
+ *   - Absolute Beginner: pt-BR phonetic spellings in `ear`/`drills` + slow TTS.
+ *   - Intermediate: standard text, normal TTS, higher time pressure.
+ *   - Fluent (Free Flight): open mic, no subtitles, heavy ambient noise.
  *
- *  Authored for the ABSOLUTE BEGINNER baseline: short survival phrases,
- *  phonetics (pt-BR sound-spelling in `ear` + `drills`), and high-pressure
- *  auditory repetition. The HUD adapts difficulty by the learner's level.
- *
- *  Schema: see docs/CONTENT_SCHEMA.md. LEARNING CONTENT (text/basic/fluent)
- *  stays English by design; `tr`/`ear`/`objective`/`drills.note` are bilingual.
+ *  Schema: docs/CONTENT_SCHEMA.md. LEARNING CONTENT (text/basic/fluent) is
+ *  English; tr/ear/objective/drills.note are bilingual {en, "pt-BR"}.
  * ============================================================ */
 
 export const BLOCK0_MODULES = [
-  /* ===================== PHASE 1 — THE FLIGHT ===================== */
+  /* ===================== 1.1 — THE FLIGHT ===================== */
   {
-    sequence: 1, blockId: 1, indexInBlock: 1, phase: 1, threshold: 80,
+    sequence: 1, blockId: 1, indexInBlock: 1, phase: 1, subBlock: "1.1", threshold: 80,
     sceneTitle: { en: "Boarding — Find Your Seat", "pt-BR": "Embarque — Ache Seu Assento" },
     contextDescription: {
-      en: "The jet bridge hums. You step into a narrow cabin: recycled air, the whine of the APU, a queue pressing behind you. A crew member blocks the aisle, waiting.",
-      "pt-BR": "A ponte de embarque vibra. Você entra numa cabine estreita: ar reciclado, o zumbido da APU, uma fila empurrando atrás de você. Um comissário bloqueia o corredor, esperando.",
+      en: "A narrow cabin, recycled air, the whine of the APU, and a queue pressing behind you. The crew member blocks the aisle, waiting.",
+      "pt-BR": "Cabine estreita, ar reciclado, o zumbido da APU e uma fila empurrando atrás de você. O comissário bloqueia o corredor, esperando.",
     },
-    objective: {
-      en: "From zero: greet, hand over your boarding pass, and understand a seat number. Survival verbs: show, find, sit.",
-      "pt-BR": "Do zero: cumprimentar, entregar o cartão de embarque e entender o número do assento. Verbos de sobrevivência: mostrar, achar, sentar.",
-    },
+    objective: { en: "Greet, show your boarding pass, understand a seat number.", "pt-BR": "Cumprimentar, mostrar o cartão de embarque, entender o número do assento." },
     environment: { mood: "neutral", baseNoise: 40 },
-    npc: { name: { en: "Cabin Crew", "pt-BR": "Comissário(a) de Bordo" }, initials: "CC" },
-    drills: [
-      { word: "excuse me", say: "iks-KIÚZ mi", note: { en: "The magic phrase to pass / get attention.", "pt-BR": "A frase mágica para passar / chamar atenção." } },
-      { word: "twenty-two A", say: "TUÉN-ti-tchú ÊI", note: { en: "Seat numbers: number + letter.", "pt-BR": "Assentos: número + letra." } },
-    ],
+    npc: { name: { en: "Cabin Crew", "pt-BR": "Comissário(a)" }, initials: "CC" },
+    drills: [{ word: "excuse me", say: "iks-KIÚZ mi", note: { en: "To pass / get attention.", "pt-BR": "Para passar / chamar atenção." } }],
     dialogueSteps: [
-      {
-        text: "Good evening. Boarding pass, please.",
-        tr: { en: "She wants to see your boarding pass.", "pt-BR": "Ela quer ver seu cartão de embarque." },
-        ear: { en: "<b>“bor-ding pass”</b> — two calm beats.", "pt-BR": "<b>“bór-din pés”</b> — dois tempos calmos." },
-        audioPrompt: "Crew, polite but brisk: “Good evening. Boarding pass, please.”",
-        basic: "Here.", fluent: "Here you are.",
-      },
-      {
-        text: "Twenty-two A. Window seat, on your left.",
-        tr: { en: "Your seat is 22A, a window on the left.", "pt-BR": "Seu assento é o 22A, janela à esquerda." },
-        ear: { en: "<b>“win-doh”</b>, not “window-uh”.", "pt-BR": "<b>“uín-dô”</b>, sem “u” no fim." },
-        audioPrompt: "Crew, pointing down the aisle: “Twenty-two A. Window seat, on your left.”",
-        basic: "Thank you.", fluent: "Thank you very much.",
-      },
+      { text: "Good evening. Boarding pass, please.", tr: { en: "She wants your boarding pass.", "pt-BR": "Ela quer seu cartão de embarque." }, ear: { en: "<b>“bor-ding pass”</b>", "pt-BR": "<b>“bór-din pés”</b>" }, audioPrompt: "Crew, brisk: “Good evening. Boarding pass, please.”", basic: "Here.", fluent: "Here you are." },
+      { text: "Twenty-two A. Window seat, on your left.", tr: { en: "Seat 22A, window, left.", "pt-BR": "Assento 22A, janela, à esquerda." }, ear: { en: "<b>“win-doh”</b>", "pt-BR": "<b>“uín-dô”</b>" }, audioPrompt: "Crew, pointing: “Twenty-two A. Window seat, on your left.”", basic: "Thank you.", fluent: "Thank you very much." },
     ],
   },
   {
-    sequence: 2, blockId: 1, indexInBlock: 2, phase: 1, threshold: 80,
-    sceneTitle: { en: "The Overhead Locker", "pt-BR": "O Compartimento Superior" },
-    contextDescription: {
-      en: "Your bag is heavy and the bin is full. Passengers behind you sigh. The crew member reaches to help — but needs a word from you.",
-      "pt-BR": "Sua mala é pesada e o compartimento está cheio. Os passageiros atrás suspiram. O comissário se aproxima para ajudar — mas precisa de uma palavra sua.",
-    },
-    objective: {
-      en: "Accept/ask for help and follow a simple instruction. Words: bag, help, please.",
-      "pt-BR": "Aceitar/pedir ajuda e seguir uma instrução simples. Palavras: bag, help, please.",
-    },
-    environment: { mood: "neutral", baseNoise: 42 },
-    npc: { name: { en: "Cabin Crew", "pt-BR": "Comissário(a) de Bordo" }, initials: "CC" },
-    drills: [
-      { word: "help, please", say: "RÉLP, plíz", note: { en: "Aspirated H — push air.", "pt-BR": "H aspirado — solte o ar." } },
-    ],
-    dialogueSteps: [
-      {
-        text: "Please put your bag in the locker above.",
-        tr: { en: "Put your bag in the bin above your head.", "pt-BR": "Coloque sua mala no compartimento acima." },
-        ear: { en: "<b>“lock-er”</b> — short ‘o’.", "pt-BR": "<b>“ló-kâr”</b> — ‘o’ curto." },
-        audioPrompt: "Crew, gesturing up: “Please put your bag in the locker above.”",
-        basic: "Okay.", fluent: "Sure, one moment.",
-      },
-      {
-        text: "Do you need a hand?",
-        tr: { en: "Do you need help?", "pt-BR": "Você precisa de ajuda?" },
-        ear: { en: "<b>“need a hand”</b> = need help.", "pt-BR": "<b>“níd a rénd”</b> = precisar de ajuda." },
-        audioPrompt: "Crew, reaching for the bag: “Do you need a hand?”",
-        basic: "Yes, please.", fluent: "Yes, please — it's heavy.",
-      },
-    ],
-  },
-  {
-    sequence: 3, blockId: 1, indexInBlock: 3, phase: 1, threshold: 80,
+    sequence: 2, blockId: 1, indexInBlock: 2, phase: 1, subBlock: "1.1", threshold: 80,
     sceneTitle: { en: "Seatbelt & Safety", "pt-BR": "Cinto & Segurança" },
     contextDescription: {
-      en: "Seated at last. The cabin lights dim. A safety chime sounds. The crew works the aisle fast, checking everyone before pushback.",
-      "pt-BR": "Finalmente sentado. As luzes baixam. Um aviso sonoro toca. A tripulação percorre o corredor rápido, checando todos antes do recuo.",
+      en: "Lights dim, a safety chime sounds, and the crew sweeps the aisle fast before pushback.",
+      "pt-BR": "As luzes baixam, um aviso sonoro toca e a tripulação percorre o corredor rápido antes do recuo.",
     },
-    objective: {
-      en: "Obey safety commands instantly; say yes/no clearly. Words: seatbelt, up, please.",
-      "pt-BR": "Obedecer comandos de segurança na hora; dizer sim/não com clareza. Palavras: seatbelt, up, please.",
-    },
+    objective: { en: "Obey safety commands instantly; clear yes/no.", "pt-BR": "Obedecer comandos de segurança na hora; sim/não claros." },
     environment: { mood: "neutral", baseNoise: 44 },
-    npc: { name: { en: "Cabin Crew", "pt-BR": "Comissário(a) de Bordo" }, initials: "CC" },
-    drills: [
-      { word: "yes / no", say: "IÉS / NÔU", note: { en: "Clear vowels — your two lifelines.", "pt-BR": "Vogais claras — suas duas tábuas de salvação." } },
-    ],
+    npc: { name: { en: "Cabin Crew", "pt-BR": "Comissário(a)" }, initials: "CC" },
+    drills: [{ word: "yes / no", say: "IÉS / NÔU", note: { en: "Your two lifelines.", "pt-BR": "Suas duas tábuas de salvação." } }],
     dialogueSteps: [
-      {
-        text: "Fasten your seatbelt, please.",
-        tr: { en: "Buckle your seatbelt.", "pt-BR": "Afivele o cinto de segurança." },
-        ear: { en: "<b>“seat-belt”</b> — two clear parts.", "pt-BR": "<b>“sít-bélt”</b> — duas partes claras." },
-        audioPrompt: "Crew, leaning in: “Fasten your seatbelt, please.”",
-        basic: "Okay.", fluent: "Done.",
-      },
-      {
-        text: "Tray table up. We're departing.",
-        tr: { en: "Put the tray table up; we are leaving.", "pt-BR": "Levante a mesinha; vamos partir." },
-        ear: { en: "<b>“tray”</b> rhymes with “day”.", "pt-BR": "<b>“trêi”</b> rima com “day”." },
-        audioPrompt: "Crew, brisk: “Tray table up. We're departing.”",
-        basic: "Okay.", fluent: "Sure, up now.",
-      },
+      { text: "Fasten your seatbelt, please.", tr: { en: "Buckle your seatbelt.", "pt-BR": "Afivele o cinto." }, ear: { en: "<b>“sít-bélt”</b>", "pt-BR": "<b>“sít-bélt”</b>" }, audioPrompt: "Crew, leaning in: “Fasten your seatbelt, please.”", basic: "Okay.", fluent: "Done." },
+      { text: "Tray table up. We're departing.", tr: { en: "Tray up; we're leaving.", "pt-BR": "Mesinha para cima; vamos partir." }, ear: { en: "<b>“trêi”</b> (rhymes with day)", "pt-BR": "<b>“trêi”</b> (rima com day)" }, audioPrompt: "Crew, brisk: “Tray table up. We're departing.”", basic: "Okay.", fluent: "Sure, up now." },
     ],
   },
   {
-    sequence: 4, blockId: 1, indexInBlock: 4, phase: 1, threshold: 80,
-    sceneTitle: { en: "“I Don't Understand”", "pt-BR": "“Eu Não Entendo”" },
-    contextDescription: {
-      en: "The engines spool up to a steady roar. A crew member rattles off a fast question over the noise. This is the most important survival skill: stopping the conversation safely.",
-      "pt-BR": "As turbinas sobem a um ronco constante. Um comissário dispara uma pergunta rápida por cima do barulho. Esta é a habilidade de sobrevivência mais importante: pausar a conversa com segurança.",
-    },
-    objective: {
-      en: "The core survival kit: 'Sorry?', 'I don't understand', 'Slowly, please'. These keep you alive in every later module.",
-      "pt-BR": "O kit central de sobrevivência: 'Sorry?', 'I don't understand', 'Slowly, please'. Eles te salvam em todos os módulos seguintes.",
-    },
-    environment: { mood: "neutral", baseNoise: 52 },
-    npc: { name: { en: "Cabin Crew", "pt-BR": "Comissário(a) de Bordo" }, initials: "CC" },
-    drills: [
-      { word: "I don't understand", say: "ai dôunt ãn-dâr-STÉND", note: { en: "Stress the last part: under-STAND.", "pt-BR": "Acentue o final: under-STAND." } },
-      { word: "slowly, please", say: "SLÔU-li, plíz", note: { en: "Ask people to slow down.", "pt-BR": "Peça para falarem devagar." } },
-    ],
-    dialogueSteps: [
-      {
-        text: "Wouldyoulikeanyduty-freeitemstoday?",
-        tr: { en: "(Said too fast) He's offering duty-free shopping.", "pt-BR": "(Dito rápido demais) Ele oferece compras duty-free." },
-        ear: { en: "Don't guess — stop it: <b>“Sorry, I don't understand.”</b>", "pt-BR": "Não chute — pause: <b>“Sorry, I don't understand.”</b>" },
-        audioPrompt: "Crew, far too fast over engine noise: “Would-you-like-any-duty-free-items-today?”",
-        basic: "I don't understand.", fluent: "Sorry, I don't understand. Slowly, please.",
-      },
-      {
-        text: "No problem. Du-ty free. Per-fume?",
-        tr: { en: "He slows down: duty-free perfume?", "pt-BR": "Ele desacelera: perfume duty-free?" },
-        ear: { en: "<b>“per-fume”</b> — two clear beats.", "pt-BR": "<b>“pâr-fium”</b> — dois tempos claros." },
-        audioPrompt: "Crew, slower and kinder: “No problem. Du-ty free. Per-fume?”",
-        basic: "No, thank you.", fluent: "No, thank you.",
-      },
-    ],
-  },
-  {
-    sequence: 5, blockId: 1, indexInBlock: 5, phase: 1, threshold: 80,
-    sceneTitle: { en: "Drinks Service", "pt-BR": "Serviço de Bebidas" },
-    contextDescription: {
-      en: "A trolley rolls down the aisle, ice rattling. The crew member works fast — three rows a minute. You get one chance to answer.",
-      "pt-BR": "Um carrinho desce o corredor, gelo chacoalhando. O comissário trabalha rápido — três fileiras por minuto. Você tem uma chance de responder.",
-    },
-    objective: {
-      en: "Make a one-word request and a simple choice. Words: water, please; still/sparkling.",
-      "pt-BR": "Fazer um pedido de uma palavra e uma escolha simples. Palavras: water, please; still/sparkling.",
-    },
-    environment: { mood: "neutral", baseNoise: 50 },
-    npc: { name: { en: "Cabin Crew", "pt-BR": "Comissário(a) de Bordo" }, initials: "CC" },
-    drills: [
-      { word: "water, please", say: "UÓ-târ, plíz", note: { en: "British ‘water’: soft T.", "pt-BR": "‘water’ britânico: T suave." } },
-    ],
-    dialogueSteps: [
-      {
-        text: "Something to drink? Water, juice, coffee?",
-        tr: { en: "What would you like to drink?", "pt-BR": "O que você quer beber?" },
-        ear: { en: "<b>“juice”</b> = “djus”.", "pt-BR": "<b>“juice”</b> = “djus”." },
-        audioPrompt: "Crew over trolley clatter: “Something to drink? Water, juice, coffee?”",
-        basic: "Water, please.", fluent: "Water, please.",
-      },
-      {
-        text: "Still or sparkling?",
-        tr: { en: "Flat water or fizzy water?", "pt-BR": "Água sem gás ou com gás?" },
-        ear: { en: "<b>“still”</b> = sem gás; <b>“sparkling”</b> = com gás.", "pt-BR": "<b>“still”</b> = sem gás; <b>“sparkling”</b> = com gás." },
-        audioPrompt: "Crew, holding two bottles: “Still or sparkling?”",
-        basic: "Still.", fluent: "Still, please.",
-      },
-    ],
-  },
-  {
-    sequence: 6, blockId: 1, indexInBlock: 6, phase: 1, threshold: 80,
-    sceneTitle: { en: "Meal Service", "pt-BR": "Serviço de Refeição" },
-    contextDescription: {
-      en: "Hot trays, a narrow choice, and no time. The crew member holds two foil dishes and an eyebrow raised.",
-      "pt-BR": "Bandejas quentes, escolha curta e sem tempo. O comissário segura dois pratos de alumínio e uma sobrancelha erguida.",
-    },
-    objective: {
-      en: "Choose between two options and decline politely. Words: chicken/pasta, no thank you.",
-      "pt-BR": "Escolher entre duas opções e recusar com educação. Palavras: chicken/pasta, no thank you.",
-    },
-    environment: { mood: "neutral", baseNoise: 48 },
-    npc: { name: { en: "Cabin Crew", "pt-BR": "Comissário(a) de Bordo" }, initials: "CC" },
-    drills: [
-      { word: "chicken", say: "TCHÍ-kën", note: { en: "Two syllables, soft ending.", "pt-BR": "Duas sílabas, final suave." } },
-    ],
-    dialogueSteps: [
-      {
-        text: "Chicken or pasta?",
-        tr: { en: "Which meal: chicken or pasta?", "pt-BR": "Qual refeição: frango ou massa?" },
-        ear: { en: "<b>“pasta”</b> = “pás-ta” (UK).", "pt-BR": "<b>“pasta”</b> = “pás-ta” (Reino Unido)." },
-        audioPrompt: "Crew, two trays raised: “Chicken or pasta?”",
-        basic: "Chicken, please.", fluent: "Chicken, please.",
-      },
-      {
-        text: "Anything to drink with your meal?",
-        tr: { en: "Do you want a drink with the food?", "pt-BR": "Quer uma bebida com a comida?" },
-        ear: { en: "<b>“with”</b> — soft ‘th’, tongue out.", "pt-BR": "<b>“with”</b> — ‘th’ suave, língua entre os dentes." },
-        audioPrompt: "Crew, pouring: “Anything to drink with your meal?”",
-        basic: "No, thank you.", fluent: "Just water, thanks.",
-      },
-    ],
-  },
-  {
-    sequence: 7, blockId: 1, indexInBlock: 7, phase: 1, threshold: 80,
-    sceneTitle: { en: "Anxiety — Feeling Unwell", "pt-BR": "Ansiedade — Mal-Estar" },
-    contextDescription: {
-      en: "Two hours in. Your chest is tight, the air feels thin, your hands are cold. A crew member crouches by your seat, voice low and steady.",
-      "pt-BR": "Duas horas de voo. O peito aperta, o ar parece rarefeito, suas mãos estão geladas. Um comissário se agacha ao seu lado, voz baixa e firme.",
-    },
-    objective: {
-      en: "Name a feeling and accept help — staying calm under pressure. Words: sick, nervous, water, breathe.",
-      "pt-BR": "Nomear um sentimento e aceitar ajuda — mantendo a calma sob pressão. Palavras: sick, nervous, water, breathe.",
-    },
-    environment: { mood: "pleased", baseNoise: 46 },
-    npc: { name: { en: "Cabin Crew", "pt-BR": "Comissário(a) de Bordo" }, initials: "CC" },
-    drills: [
-      { word: "I feel sick", say: "ai fíl SÍK", note: { en: "‘sick’ = unwell/nauseous.", "pt-BR": "‘sick’ = enjoado/mal." } },
-      { word: "I'm nervous", say: "aim NÂR-vâs", note: { en: "Say how you feel; help comes faster.", "pt-BR": "Diga como se sente; a ajuda vem mais rápido." } },
-    ],
-    dialogueSteps: [
-      {
-        text: "Are you alright? You look pale.",
-        tr: { en: "Are you okay? You look pale.", "pt-BR": "Você está bem? Está pálido(a)." },
-        ear: { en: "<b>“alright”</b> = “ol-RÁIT”.", "pt-BR": "<b>“alright”</b> = “ol-RÁIT”." },
-        audioPrompt: "Crew, gentle, crouching: “Are you alright? You look pale.”",
-        basic: "I feel sick.", fluent: "I feel a little sick.",
-      },
-      {
-        text: "Breathe slowly. Do you want water?",
-        tr: { en: "Breathe slowly — do you want water?", "pt-BR": "Respire devagar — quer água?" },
-        ear: { en: "<b>“breathe”</b> = “bríth” (soft th).", "pt-BR": "<b>“breathe”</b> = “bríth” (th suave)." },
-        audioPrompt: "Crew, calm and slow: “Breathe slowly. Do you want water?”",
-        basic: "Yes, please.", fluent: "Yes, please. Thank you.",
-      },
-    ],
-  },
-  {
-    sequence: 8, blockId: 1, indexInBlock: 8, phase: 1, threshold: 80,
-    sceneTitle: { en: "Asking for Things", "pt-BR": "Pedindo Coisas" },
-    contextDescription: {
-      en: "The cabin is cold and dark; most passengers sleep. You need two things — and you must start the conversation yourself.",
-      "pt-BR": "A cabine está fria e escura; quase todos dormem. Você precisa de duas coisas — e precisa iniciar a conversa sozinho(a).",
-    },
-    objective: {
-      en: "Initiate a polite request and ask where something is. Words: blanket, where, toilet.",
-      "pt-BR": "Iniciar um pedido educado e perguntar onde fica algo. Palavras: blanket, where, toilet.",
-    },
-    environment: { mood: "neutral", baseNoise: 43 },
-    npc: { name: { en: "Cabin Crew", "pt-BR": "Comissário(a) de Bordo" }, initials: "CC" },
-    drills: [
-      { word: "Could I have…?", say: "kud ai RÉV", note: { en: "Polite request opener.", "pt-BR": "Abertura de pedido educado." } },
-      { word: "Where is…?", say: "UÉR iz", note: { en: "Ask for any location.", "pt-BR": "Pergunte por qualquer lugar." } },
-    ],
-    dialogueSteps: [
-      {
-        text: "Can I help you with anything?",
-        tr: { en: "Do you need anything?", "pt-BR": "Você precisa de alguma coisa?" },
-        ear: { en: "<b>“anything”</b> = “É-ni-thin”.", "pt-BR": "<b>“anything”</b> = “É-ni-thin”." },
-        audioPrompt: "Crew, quiet in the dark cabin: “Can I help you with anything?”",
-        basic: "A blanket, please.", fluent: "Could I have a blanket, please?",
-      },
-      {
-        text: "Of course. Anything else?",
-        tr: { en: "Sure — anything more?", "pt-BR": "Claro — mais alguma coisa?" },
-        ear: { en: "<b>“toilet”</b> = “TÓI-lët” (UK).", "pt-BR": "<b>“toilet”</b> = “TÓI-lët” (Reino Unido)." },
-        audioPrompt: "Crew, handing a blanket: “Of course. Anything else?”",
-        basic: "Where is the toilet?", fluent: "Yes — where is the toilet?",
-      },
-    ],
-  },
-  {
-    sequence: 9, blockId: 1, indexInBlock: 9, phase: 1, threshold: 80,
+    sequence: 3, blockId: 1, indexInBlock: 3, phase: 1, subBlock: "1.1", threshold: 80,
     sceneTitle: { en: "Turbulence — Follow Orders", "pt-BR": "Turbulência — Siga as Ordens" },
     contextDescription: {
-      en: "The plane drops. Overhead bins shudder, a tray crashes, the seatbelt sign chimes hard. The crew shouts clear, urgent commands. No time to translate — only to obey.",
-      "pt-BR": "O avião despenca. Os compartimentos tremem, uma bandeja cai, o aviso do cinto toca forte. A tripulação grita comandos claros e urgentes. Sem tempo para traduzir — só para obedecer.",
+      en: "The plane drops. Bins shudder, a tray crashes, the seatbelt sign chimes hard. The crew shouts urgent commands — no time to translate.",
+      "pt-BR": "O avião despenca. Compartimentos tremem, uma bandeja cai, o aviso do cinto toca forte. A tripulação grita comandos urgentes — sem tempo para traduzir.",
     },
-    objective: {
-      en: "Understand and obey urgent commands instantly. Words: seat, now, fasten, stay calm.",
-      "pt-BR": "Entender e obedecer comandos urgentes na hora. Palavras: seat, now, fasten, stay calm.",
-    },
+    objective: { en: "Understand and obey urgent commands instantly.", "pt-BR": "Entender e obedecer comandos urgentes na hora." },
     environment: { mood: "hostile", baseNoise: 64 },
-    npc: { name: { en: "Cabin Crew", "pt-BR": "Comissário(a) de Bordo" }, initials: "CC" },
-    drills: [
-      { word: "right now", say: "RÁIT NÁU", note: { en: "Immediacy — act, don't think.", "pt-BR": "Imediato — aja, não pense." } },
-    ],
+    npc: { name: { en: "Cabin Crew", "pt-BR": "Comissário(a)" }, initials: "CC" },
+    drills: [{ word: "right now", say: "RÁIT NÁU", note: { en: "Act, don't think.", "pt-BR": "Aja, não pense." } }],
     dialogueSteps: [
-      {
-        text: "Return to your seat immediately!",
-        tr: { en: "Go back to your seat now!", "pt-BR": "Volte ao seu assento agora!" },
-        ear: { en: "<b>“immediately”</b> = “i-MÍ-di-êt-li”.", "pt-BR": "<b>“immediately”</b> = “i-MÍ-di-êt-li”." },
-        audioPrompt: "Crew, shouting over alarms: “Return to your seat immediately!”",
-        basic: "Okay!", fluent: "Okay — right now!",
-      },
-      {
-        text: "Fasten your seatbelt. Stay calm.",
-        tr: { en: "Buckle up. Stay calm.", "pt-BR": "Afivele o cinto. Mantenha a calma." },
-        ear: { en: "<b>“stay calm”</b> = “stêi KÁM” (silent L).", "pt-BR": "<b>“stay calm”</b> = “stêi KÁM” (L mudo)." },
-        audioPrompt: "Crew, firm and loud: “Fasten your seatbelt. Stay calm.”",
-        basic: "Yes!", fluent: "I understand.",
-      },
+      { text: "Return to your seat immediately!", tr: { en: "Go back to your seat now!", "pt-BR": "Volte ao seu assento agora!" }, ear: { en: "<b>“i-MÍ-di-êt-li”</b>", "pt-BR": "<b>“i-MÍ-di-êt-li”</b>" }, audioPrompt: "Crew, shouting over alarms: “Return to your seat immediately!”", basic: "Okay!", fluent: "Okay — right now!" },
+      { text: "Fasten your seatbelt. Stay calm.", tr: { en: "Buckle up. Stay calm.", "pt-BR": "Afivele o cinto. Mantenha a calma." }, ear: { en: "<b>“stêi KÁM”</b> (silent L)", "pt-BR": "<b>“stêi KÁM”</b> (L mudo)" }, audioPrompt: "Crew, firm and loud: “Fasten your seatbelt. Stay calm.”", basic: "Yes!", fluent: "I understand." },
     ],
   },
   {
-    sequence: 10, blockId: 1, indexInBlock: 10, phase: 1, threshold: 80,
-    sceneTitle: { en: "Your Neighbor", "pt-BR": "Seu Vizinho de Assento" },
+    sequence: 4, blockId: 1, indexInBlock: 4, phase: 1, subBlock: "1.1", threshold: 80,
+    sceneTitle: { en: "Feeling Unwell", "pt-BR": "Mal-Estar" },
     contextDescription: {
-      en: "Calm again. The passenger beside you smiles and tries to chat. Low stakes, but your first real conversation — small talk is a survival skill too.",
-      "pt-BR": "Tudo calmo de novo. O passageiro ao lado sorri e puxa conversa. Baixo risco, mas seu primeiro papo de verdade — conversa fiada também é sobrevivência.",
+      en: "Two hours in: tight chest, thin air, cold hands. A crew member crouches by your seat, voice low and steady.",
+      "pt-BR": "Duas horas de voo: peito apertado, ar rarefeito, mãos geladas. Um comissário se agacha ao seu lado, voz baixa e firme.",
     },
-    objective: {
-      en: "Survive small talk: answer where you're from and yes/no. Words: yes, from, Brazil, first time.",
-      "pt-BR": "Sobreviver à conversa fiada: dizer de onde você é e sim/não. Palavras: yes, from, Brazil, first time.",
-    },
-    environment: { mood: "pleased", baseNoise: 41 },
-    npc: { name: { en: "Fellow Passenger", "pt-BR": "Passageiro(a) ao Lado" }, initials: "PA" },
-    drills: [
-      { word: "I'm from Brazil", say: "aim from bra-ZÍL", note: { en: "Stress the country's last syllable.", "pt-BR": "Acentue a última sílaba do país." } },
-    ],
+    objective: { en: "Name a feeling and accept help, staying calm.", "pt-BR": "Nomear um sentimento e aceitar ajuda, mantendo a calma." },
+    environment: { mood: "pleased", baseNoise: 46 },
+    npc: { name: { en: "Cabin Crew", "pt-BR": "Comissário(a)" }, initials: "CC" },
+    drills: [{ word: "I feel sick", say: "ai fíl SÍK", note: { en: "= unwell / nauseous.", "pt-BR": "= enjoado / mal." } }],
     dialogueSteps: [
-      {
-        text: "First time in London?",
-        tr: { en: "Is this your first visit to London?", "pt-BR": "É sua primeira vez em Londres?" },
-        ear: { en: "<b>“first”</b> = “fârst” (curl the R).", "pt-BR": "<b>“first”</b> = “fârst” (enrole o R)." },
-        audioPrompt: "Passenger, friendly: “First time in London?”",
-        basic: "Yes.", fluent: "Yes, my first time.",
-      },
-      {
-        text: "Nice. Where are you from?",
-        tr: { en: "Where do you come from?", "pt-BR": "De onde você é?" },
-        ear: { en: "<b>“where are you”</b> blends: “UÉ-ra-iú”.", "pt-BR": "<b>“where are you”</b> junta: “UÉ-ra-iú”." },
-        audioPrompt: "Passenger, leaning in: “Nice. Where are you from?”",
-        basic: "Brazil.", fluent: "I'm from Brazil.",
-      },
+      { text: "Are you alright? You look pale.", tr: { en: "Are you okay? You look pale.", "pt-BR": "Você está bem? Está pálido(a)." }, ear: { en: "<b>“ol-RÁIT”</b>", "pt-BR": "<b>“ol-RÁIT”</b>" }, audioPrompt: "Crew, gentle: “Are you alright? You look pale.”", basic: "I feel sick.", fluent: "I feel a little sick." },
+      { text: "Breathe slowly. Do you want water?", tr: { en: "Breathe slowly — want water?", "pt-BR": "Respire devagar — quer água?" }, ear: { en: "<b>“bríth”</b> (soft th)", "pt-BR": "<b>“bríth”</b> (th suave)" }, audioPrompt: "Crew, calm: “Breathe slowly. Do you want water?”", basic: "Yes, please.", fluent: "Yes, please. Thank you." },
     ],
   },
   {
-    sequence: 11, blockId: 1, indexInBlock: 11, phase: 1, threshold: 80,
+    sequence: 5, blockId: 1, indexInBlock: 5, phase: 1, subBlock: "1.1", threshold: 80,
     sceneTitle: { en: "The Immigration Form", "pt-BR": "O Cartão de Imigração" },
     contextDescription: {
-      en: "The crew hands out landing cards before descent. The English on the form is dense; the crew member explains the fields you must fill in — and you'll repeat these exact words to the officer soon.",
-      "pt-BR": "A tripulação distribui os cartões de desembarque antes da descida. O inglês do formulário é denso; o comissário explica os campos que você deve preencher — e você repetirá essas mesmas palavras ao oficial em breve.",
+      en: "Landing cards handed out before descent. The crew explains the fields — you'll say these exact words to the officer soon.",
+      "pt-BR": "Cartões de desembarque distribuídos antes da descida. A tripulação explica os campos — você dirá essas mesmas palavras ao oficial em breve.",
     },
-    objective: {
-      en: "Learn form vocabulary you'll reuse at customs: surname, purpose, address, sign.",
-      "pt-BR": "Aprender o vocabulário do formulário que você reusará na imigração: surname, purpose, address, sign.",
-    },
+    objective: { en: "Learn form words reused at customs: surname, purpose, sign.", "pt-BR": "Aprender palavras do formulário reusadas na imigração: surname, purpose, sign." },
     environment: { mood: "neutral", baseNoise: 45 },
-    npc: { name: { en: "Cabin Crew", "pt-BR": "Comissário(a) de Bordo" }, initials: "CC" },
+    npc: { name: { en: "Cabin Crew", "pt-BR": "Comissário(a)" }, initials: "CC" },
     drills: [
-      { word: "surname", say: "SÂR-nêim", note: { en: "= family name / last name.", "pt-BR": "= sobrenome." } },
-      { word: "purpose", say: "PÂR-pâs", note: { en: "= the reason for your trip.", "pt-BR": "= o motivo da viagem." } },
+      { word: "surname", say: "SÂR-nêim", note: { en: "= family name.", "pt-BR": "= sobrenome." } },
+      { word: "purpose", say: "PÂR-pâs", note: { en: "= reason for the trip.", "pt-BR": "= motivo da viagem." } },
     ],
     dialogueSteps: [
-      {
-        text: "Here's your landing card. Write your surname here.",
-        tr: { en: "Fill in your family name in this box.", "pt-BR": "Escreva seu sobrenome neste campo." },
-        ear: { en: "<b>“landing card”</b> = “LÉN-din kard”.", "pt-BR": "<b>“landing card”</b> = “LÉN-din kard”." },
-        audioPrompt: "Crew, handing a small card and pen: “Here's your landing card. Write your surname here.”",
-        basic: "Okay.", fluent: "Okay, thank you.",
-      },
-      {
-        text: "Purpose of visit — tourism or business?",
-        tr: { en: "Why are you visiting — tourism or business?", "pt-BR": "Qual o motivo — turismo ou negócios?" },
-        ear: { en: "<b>“tourism”</b> = “TÚ-ri-zm”.", "pt-BR": "<b>“tourism”</b> = “TÚ-ri-zm”." },
-        audioPrompt: "Crew, pointing at the box: “Purpose of visit — tourism or business?”",
-        basic: "Tourism.", fluent: "Tourism.",
-      },
-      {
-        text: "Good. Sign at the bottom, please.",
-        tr: { en: "Now sign your name at the bottom.", "pt-BR": "Agora assine na parte de baixo." },
-        ear: { en: "<b>“sign”</b> = “sáin” (silent G).", "pt-BR": "<b>“sign”</b> = “sáin” (G mudo)." },
-        audioPrompt: "Crew, tapping the line: “Good. Sign at the bottom, please.”",
-        basic: "Here?", fluent: "Right here?",
-      },
-    ],
-  },
-  {
-    sequence: 12, blockId: 1, indexInBlock: 12, phase: 1, threshold: 80,
-    sceneTitle: { en: "Descent & Landing", "pt-BR": "Descida & Pouso" },
-    contextDescription: {
-      en: "Ears pop as the plane drops through cloud. A final announcement crackles overhead. Seats up, belts on — London is below. Survive this and the doors open.",
-      "pt-BR": "Os ouvidos tampam enquanto o avião desce pelas nuvens. Um último aviso estala no alto. Encostos retos, cintos afivelados — Londres está logo abaixo. Sobreviva a isto e as portas se abrem.",
-    },
-    objective: {
-      en: "Follow the final landing instructions and close Phase 1. Words: upright, landing, welcome.",
-      "pt-BR": "Seguir as instruções finais do pouso e encerrar a Fase 1. Palavras: upright, landing, welcome.",
-    },
-    environment: { mood: "neutral", baseNoise: 55 },
-    npc: { name: { en: "Cabin Crew", "pt-BR": "Comissário(a) de Bordo" }, initials: "CC" },
-    drills: [
-      { word: "seat upright", say: "sít âp-RÁIT", note: { en: "Bring the seat forward.", "pt-BR": "Traga o encosto para frente." } },
-    ],
-    dialogueSteps: [
-      {
-        text: "Seat upright, please. We're landing.",
-        tr: { en: "Put your seat up; we are landing.", "pt-BR": "Endireite o encosto; vamos pousar." },
-        ear: { en: "<b>“landing”</b> = “LÉN-din”.", "pt-BR": "<b>“landing”</b> = “LÉN-din”." },
-        audioPrompt: "Crew, final check, brisk: “Seat upright, please. We're landing.”",
-        basic: "Okay.", fluent: "Done.",
-      },
-      {
-        text: "Welcome to London. Local time is 6 a.m.",
-        tr: { en: "Welcome to London — it's 6 in the morning.", "pt-BR": "Bem-vindo a Londres — são 6 da manhã." },
-        ear: { en: "<b>“welcome”</b> = “UÉL-câm”.", "pt-BR": "<b>“welcome”</b> = “UÉL-câm”." },
-        audioPrompt: "Captain on the PA, warm: “Welcome to London. Local time is 6 a.m.”",
-        basic: "Thank you.", fluent: "Thank you.",
-      },
+      { text: "Write your surname here, and your purpose of visit.", tr: { en: "Fill in family name + reason.", "pt-BR": "Preencha sobrenome + motivo." }, ear: { en: "<b>“PÂR-pâs”</b>", "pt-BR": "<b>“PÂR-pâs”</b>" }, audioPrompt: "Crew, pointing at the card: “Write your surname here, and your purpose of visit.”", basic: "Tourism.", fluent: "Tourism — got it." },
+      { text: "Good. Sign at the bottom, please.", tr: { en: "Now sign at the bottom.", "pt-BR": "Agora assine embaixo." }, ear: { en: "<b>“sáin”</b> (silent G)", "pt-BR": "<b>“sáin”</b> (G mudo)" }, audioPrompt: "Crew, tapping the line: “Good. Sign at the bottom, please.”", basic: "Here?", fluent: "Right here?" },
     ],
   },
 
-  /* ===================== PHASE 2 — THE LANDING / ARRIVAL ===================== */
+  /* ===================== 1.2 — HOSTILE CUSTOMS ===================== */
   {
-    sequence: 13, blockId: 1, indexInBlock: 13, phase: 2, threshold: 80,
+    sequence: 6, blockId: 1, indexInBlock: 6, phase: 2, subBlock: "1.2", threshold: 80,
     sceneTitle: { en: "Passport Control", "pt-BR": "Controle de Passaporte" },
     contextDescription: {
-      en: "Off the plane into a vast, echoing terminal. A cold queue snakes toward glass booths. The officer doesn't smile. Everything you wrote on the landing card, you now must say out loud.",
-      "pt-BR": "Para fora do avião, num terminal vasto e ecoante. Uma fila fria serpenteia até cabines de vidro. O oficial não sorri. Tudo o que você escreveu no cartão, agora precisa dizer em voz alta.",
+      en: "A vast, echoing terminal. A cold queue snakes to glass booths. The officer doesn't smile, doesn't look up.",
+      "pt-BR": "Um terminal vasto e ecoante. Uma fila fria serpenteia até cabines de vidro. O oficial não sorri, não levanta os olhos.",
     },
-    objective: {
-      en: "Survive the first authority encounter: state purpose and duration. Words: passport, tourism, one week.",
-      "pt-BR": "Sobreviver ao primeiro encontro com a autoridade: dizer motivo e duração. Palavras: passport, tourism, one week.",
-    },
+    objective: { en: "Survive the first authority encounter: purpose + duration.", "pt-BR": "Sobreviver ao primeiro encontro com a autoridade: motivo + duração." },
     environment: { mood: "hostile", baseNoise: 30 },
     npc: { name: { en: "Border Officer", "pt-BR": "Oficial de Fronteira" }, initials: "BO" },
-    drills: [
-      { word: "tourism", say: "TÚ-ri-zm", note: { en: "Same word from the form — reuse it.", "pt-BR": "Mesma palavra do formulário — reutilize." } },
-    ],
+    drills: [{ word: "I don't understand", say: "ai dôunt ãn-dâr-STÉND", note: { en: "Buys you time. Stress under-STAND.", "pt-BR": "Ganha tempo. Acentue under-STAND." } }],
     dialogueSteps: [
-      {
-        text: "Passport. Purpose of your visit?",
-        tr: { en: "Show your passport; why are you here?", "pt-BR": "Mostre o passaporte; por que você veio?" },
-        ear: { en: "<b>“passport”</b> = “PÁS-port”.", "pt-BR": "<b>“passport”</b> = “PÁS-port”." },
-        audioPrompt: "Officer, flat, not looking up: “Passport. Purpose of your visit?”",
-        basic: "Tourism.", fluent: "Tourism — I'm here on holiday.",
-      },
-      {
-        text: "How long are you staying?",
-        tr: { en: "How many days will you be here?", "pt-BR": "Quantos dias você vai ficar?" },
-        ear: { en: "<b>“how long”</b> = “rau lóng”.", "pt-BR": "<b>“how long”</b> = “rau lóng”." },
-        audioPrompt: "Officer, clipped: “How long are you staying?”",
-        basic: "One week.", fluent: "About a week.",
-      },
+      { text: "Passport. Purpose of your visit?", tr: { en: "Show passport; why are you here?", "pt-BR": "Mostre o passaporte; por que veio?" }, ear: { en: "<b>“PÁS-port”</b>", "pt-BR": "<b>“PÁS-port”</b>" }, audioPrompt: "Officer, flat, not looking up: “Passport. Purpose of your visit?”", basic: "Tourism.", fluent: "Tourism — I'm here on holiday." },
+      { text: "How long are you staying?", tr: { en: "How many days here?", "pt-BR": "Quantos dias aqui?" }, ear: { en: "<b>“rau lóng”</b>", "pt-BR": "<b>“rau lóng”</b>" }, audioPrompt: "Officer, clipped: “How long are you staying?”", basic: "One week.", fluent: "About a week." },
     ],
   },
   {
-    sequence: 14, blockId: 1, indexInBlock: 14, phase: 2, threshold: 80,
-    sceneTitle: { en: "Customs — Where & Return", "pt-BR": "Imigração — Onde & Volta" },
+    sequence: 7, blockId: 1, indexInBlock: 7, phase: 2, subBlock: "1.2", threshold: 80,
+    sceneTitle: { en: "Where Are You Staying?", "pt-BR": "Onde Vai Ficar?" },
     contextDescription: {
-      en: "The officer scans your passport; the booth beeps. Two more questions stand between you and the city. Hesitate, and the questions multiply.",
-      "pt-BR": "O oficial passa o leitor; a cabine apita. Duas perguntas separam você da cidade. Hesite, e as perguntas se multiplicam.",
+      en: "The booth beeps as your passport is scanned. The officer's eyes flick up — testing whether your story holds.",
+      "pt-BR": "A cabine apita ao escanear o passaporte. Os olhos do oficial sobem — testando se sua história se sustenta.",
     },
-    objective: {
-      en: "Say where you'll stay and confirm a return ticket. Words: hotel, return ticket, Sunday.",
-      "pt-BR": "Dizer onde vai ficar e confirmar a passagem de volta. Palavras: hotel, return ticket, Sunday.",
-    },
+    objective: { en: "State your accommodation clearly and without hesitation.", "pt-BR": "Dizer sua hospedagem com clareza e sem hesitar." },
     environment: { mood: "hostile", baseNoise: 28 },
     npc: { name: { en: "Border Officer", "pt-BR": "Oficial de Fronteira" }, initials: "BO" },
-    drills: [
-      { word: "return ticket", say: "ri-TÂRN TÍ-kët", note: { en: "Proof you'll leave again.", "pt-BR": "Prova de que você vai voltar." } },
-    ],
+    drills: [{ word: "a hotel in Camden", say: "ã rô-TÉL in KÉM-dên", note: { en: "Have your address ready.", "pt-BR": "Tenha o endereço na ponta da língua." } }],
     dialogueSteps: [
-      {
-        text: "Where will you be staying?",
-        tr: { en: "What's your address here?", "pt-BR": "Onde você vai se hospedar?" },
-        ear: { en: "<b>“staying”</b> = “STÊI-in”.", "pt-BR": "<b>“staying”</b> = “STÊI-in”." },
-        audioPrompt: "Officer, reading the screen: “Where will you be staying?”",
-        basic: "A hotel.", fluent: "At a hotel in Camden.",
-      },
-      {
-        text: "Do you have a return ticket?",
-        tr: { en: "Do you have a ticket back home?", "pt-BR": "Você tem passagem de volta?" },
-        ear: { en: "<b>“return”</b> = “ri-TÂRN”.", "pt-BR": "<b>“return”</b> = “ri-TÂRN”." },
-        audioPrompt: "Officer, eyes up now: “Do you have a return ticket?”",
-        basic: "Yes.", fluent: "Yes, next Sunday.",
-      },
+      { text: "Where will you be staying?", tr: { en: "What's your address here?", "pt-BR": "Qual seu endereço aqui?" }, ear: { en: "<b>“STÊI-in”</b>", "pt-BR": "<b>“STÊI-in”</b>" }, audioPrompt: "Officer, reading the screen: “Where will you be staying?”", basic: "A hotel in Camden.", fluent: "At a hotel in Camden, near the market." },
+      { text: "Alone, or with someone?", tr: { en: "Are you traveling alone?", "pt-BR": "Está viajando sozinho(a)?" }, ear: { en: "<b>“a-LÔUN”</b>", "pt-BR": "<b>“a-LÔUN”</b>" }, audioPrompt: "Officer, probing: “Alone, or with someone?”", basic: "Alone.", fluent: "Alone, just me." },
     ],
   },
   {
-    sequence: 15, blockId: 1, indexInBlock: 15, phase: 2, threshold: 80,
-    sceneTitle: { en: "Customs — Declarations", "pt-BR": "Alfândega — Declarações" },
+    sequence: 8, blockId: 1, indexInBlock: 8, phase: 2, subBlock: "1.2", threshold: 80,
+    sceneTitle: { en: "Financial Questions", "pt-BR": "Perguntas Financeiras" },
     contextDescription: {
-      en: "Green channel or red? Trolleys rattle across tile; a sniffer dog works the line. A customs officer steps in front of you.",
-      "pt-BR": "Canal verde ou vermelho? Carrinhos chacoalham no piso; um cão farejador trabalha a fila. Um oficial da alfândega para na sua frente.",
+      en: "This is the part that decides things. The officer leans in: can you afford to be here, and will you leave?",
+      "pt-BR": "Esta é a parte que decide tudo. O oficial se inclina: você pode se sustentar aqui e vai embora?",
     },
-    objective: {
-      en: "Answer declaration questions with a confident 'no'. Words: declare, nothing, food, cash.",
-      "pt-BR": "Responder às perguntas de declaração com um 'não' confiante. Palavras: declare, nothing, food, cash.",
-    },
-    environment: { mood: "neutral", baseNoise: 36 },
-    npc: { name: { en: "Customs Officer", "pt-BR": "Oficial da Alfândega" }, initials: "CO" },
-    drills: [
-      { word: "nothing to declare", say: "NÂ-thin tu di-CLÉR", note: { en: "The green-channel answer.", "pt-BR": "A resposta do canal verde." } },
-    ],
+    objective: { en: "Prove funds and intent to leave: savings + return ticket.", "pt-BR": "Provar recursos e intenção de sair: economias + passagem de volta." },
+    environment: { mood: "hostile", baseNoise: 32 },
+    npc: { name: { en: "Border Officer", "pt-BR": "Oficial de Fronteira" }, initials: "BO" },
+    drills: [{ word: "return ticket", say: "ri-TÂRN TÍ-kët", note: { en: "Proof you'll leave.", "pt-BR": "Prova de que você vai voltar." } }],
     dialogueSteps: [
-      {
-        text: "Anything to declare?",
-        tr: { en: "Are you carrying goods to declare?", "pt-BR": "Tem algo a declarar?" },
-        ear: { en: "<b>“declare”</b> = “di-CLÉR”.", "pt-BR": "<b>“declare”</b> = “di-CLÉR”." },
-        audioPrompt: "Officer, stepping in: “Anything to declare?”",
-        basic: "No.", fluent: "No, nothing.",
-      },
-      {
-        text: "Any food, or cash over ten thousand pounds?",
-        tr: { en: "Food, or a lot of cash?", "pt-BR": "Comida, ou muito dinheiro?" },
-        ear: { en: "<b>“cash”</b> = “kéch” (short, sharp).", "pt-BR": "<b>“cash”</b> = “kéch” (curto, seco)." },
-        audioPrompt: "Officer, routine: “Any food, or cash over ten thousand pounds?”",
-        basic: "No.", fluent: "No, neither.",
-      },
+      { text: "How will you support yourself here?", tr: { en: "How will you pay for things?", "pt-BR": "Como vai se manter aqui?" }, ear: { en: "<b>“su-PÓRT”</b>", "pt-BR": "<b>“su-PÓRT”</b>" }, audioPrompt: "Officer, hard: “How will you support yourself here?”", basic: "I have savings.", fluent: "I've saved enough, and I have my cards." },
+      { text: "Do you have a return ticket?", tr: { en: "A ticket back home?", "pt-BR": "Passagem de volta?" }, ear: { en: "<b>“ri-TÂRN”</b>", "pt-BR": "<b>“ri-TÂRN”</b>" }, audioPrompt: "Officer, eyes up: “Do you have a return ticket?”", basic: "Yes, next Sunday.", fluent: "Yes — I fly back next Sunday." },
     ],
   },
   {
-    sequence: 16, blockId: 1, indexInBlock: 16, phase: 2, threshold: 80,
-    sceneTitle: { en: "Baggage Claim — Lost Bag", "pt-BR": "Esteira — Mala Perdida" },
+    sequence: 9, blockId: 1, indexInBlock: 9, phase: 2, subBlock: "1.2", threshold: 80,
+    sceneTitle: { en: "Secondary Questioning", "pt-BR": "Questionamento Secundário" },
     contextDescription: {
-      en: "Carousels groan and circle. Bags come and go — but not yours. Panic rises. You must find the right belt, then report a missing suitcase clearly.",
-      "pt-BR": "As esteiras rangem e giram. Malas vêm e vão — menos a sua. O pânico sobe. Você precisa achar a esteira certa e relatar a mala sumida com clareza.",
+      en: "Pulled aside. A harder voice, sharper questions about your life back home. Stay calm — contradictions sink you.",
+      "pt-BR": "Levado para o lado. Voz mais dura, perguntas afiadas sobre sua vida no seu país. Mantenha a calma — contradições afundam você.",
     },
-    objective: {
-      en: "Ask which belt, then describe a lost bag. Words: belt, suitcase, black, medium.",
-      "pt-BR": "Perguntar qual esteira e descrever a mala perdida. Palavras: belt, suitcase, black, medium.",
-    },
-    environment: { mood: "neutral", baseNoise: 44 },
-    npc: { name: { en: "Ground Staff", "pt-BR": "Funcionário(a) de Solo" }, initials: "GS" },
-    drills: [
-      { word: "suitcase", say: "SÚT-kêis", note: { en: "= your large travel bag.", "pt-BR": "= sua mala grande." } },
-      { word: "I can't find it", say: "ai ként FÁIND it", note: { en: "Report something missing.", "pt-BR": "Relatar algo sumido." } },
-    ],
+    objective: { en: "Answer about your job/life consistently and briefly.", "pt-BR": "Responder sobre trabalho/vida de forma consistente e breve." },
+    environment: { mood: "hostile", baseNoise: 30 },
+    npc: { name: { en: "Senior Officer", "pt-BR": "Oficial Sênior" }, initials: "SO" },
+    drills: [{ word: "I'm a designer", say: "aim a di-ZÁI-nâr", note: { en: "Say your job simply.", "pt-BR": "Diga sua profissão de forma simples." } }],
     dialogueSteps: [
-      {
-        text: "Which belt for flight BA-246?",
-        tr: { en: "(You ask) Where do bags from BA-246 arrive?", "pt-BR": "(Você pergunta) Onde chegam as malas do BA-246?" },
-        ear: { en: "<b>“belt”</b> = “bélt” (baggage carousel).", "pt-BR": "<b>“belt”</b> = “bélt” (esteira)." },
-        audioPrompt: "Staff, pointing across the hall: “Belt 5, over there.”",
-        basic: "Thank you.", fluent: "Thanks — belt 5.",
-      },
-      {
-        text: "Your bag isn't here? Describe it, please.",
-        tr: { en: "Tell me what your bag looks like.", "pt-BR": "Descreva como é a sua mala." },
-        ear: { en: "<b>“describe”</b> = “dis-CRÁIB”.", "pt-BR": "<b>“describe”</b> = “dis-CRÁIB”." },
-        audioPrompt: "Staff at the desk: “Your bag isn't here? Describe it, please.”",
-        basic: "Black, medium.", fluent: "It's black and medium-sized.",
-      },
+      { text: "What do you do for a living back home?", tr: { en: "What's your job back home?", "pt-BR": "Qual seu trabalho no seu país?" }, ear: { en: "<b>“lí-ving”</b>", "pt-BR": "<b>“lí-ving”</b>" }, audioPrompt: "Senior officer, even: “What do you do for a living back home?”", basic: "I'm a designer.", fluent: "I'm a designer — I work at a studio." },
+      { text: "And you'll go back to that job?", tr: { en: "You'll return to your job?", "pt-BR": "Você vai voltar para esse emprego?" }, ear: { en: "<b>“gôu bék”</b>", "pt-BR": "<b>“gôu bék”</b>" }, audioPrompt: "Senior officer, testing: “And you'll go back to that job?”", basic: "Yes.", fluent: "Yes, of course." },
+    ],
+  },
+  {
+    sequence: 10, blockId: 1, indexInBlock: 10, phase: 2, subBlock: "1.2", threshold: 80,
+    sceneTitle: { en: "The Stamp — Decision", "pt-BR": "O Carimbo — A Decisão" },
+    contextDescription: {
+      en: "A long pause. The officer studies you, then reaches for the stamp — or doesn't. Your last words decide it.",
+      "pt-BR": "Uma longa pausa. O oficial te estuda, então pega o carimbo — ou não. Suas últimas palavras decidem.",
+    },
+    objective: { en: "Close confidently and read the outcome.", "pt-BR": "Encerrar com confiança e entender o resultado." },
+    environment: { mood: "hostile", baseNoise: 28 },
+    npc: { name: { en: "Border Officer", "pt-BR": "Oficial de Fronteira" }, initials: "BO" },
+    drills: [{ word: "thank you", say: "TÉNK iu", note: { en: "Close politely.", "pt-BR": "Encerre com educação." } }],
+    dialogueSteps: [
+      { text: "Enjoy your stay. Next, please.", tr: { en: "You're cleared — move on.", "pt-BR": "Você foi liberado(a) — siga." }, ear: { en: "<b>“en-DJÓI”</b>", "pt-BR": "<b>“en-DJÓI”</b>" }, audioPrompt: "Officer, stamping the passport: “Enjoy your stay. Next, please.”", basic: "Thank you.", fluent: "Thank you — have a good day." },
     ],
   },
 
-  /* ===================== PHASE 3 — ARRIVAL (THE CITY) ===================== */
+  /* ===================== 1.3 — BAGGAGE CHAOS ===================== */
   {
-    sequence: 17, blockId: 1, indexInBlock: 17, phase: 3, threshold: 80,
-    sceneTitle: { en: "Ground Transport", "pt-BR": "Transporte" },
+    sequence: 11, blockId: 1, indexInBlock: 11, phase: 2, subBlock: "1.3", threshold: 80,
+    sceneTitle: { en: "Finding the Belt", "pt-BR": "Achando a Esteira" },
     contextDescription: {
-      en: "Sliding doors open onto grey London air, taxi horns and rain. A black cab pulls up; the driver lowers the window and waits, meter ticking in his head.",
-      "pt-BR": "As portas se abrem para o ar cinza de Londres, buzinas de táxi e chuva. Um táxi preto encosta; o motorista abaixa o vidro e espera, o taxímetro já rodando na cabeça dele.",
+      en: "Carousels groan and circle. Screens flicker flight numbers. You must find the right belt fast.",
+      "pt-BR": "Esteiras rangem e giram. Telas piscam números de voo. Você precisa achar a esteira certa rápido.",
     },
-    objective: {
-      en: "State a destination and ask the price. Words: to…, please; how much.",
-      "pt-BR": "Dizer o destino e perguntar o preço. Palavras: to…, please; how much.",
-    },
-    environment: { mood: "neutral", baseNoise: 52 },
-    npc: { name: { en: "Taxi Driver", "pt-BR": "Taxista" }, initials: "TX" },
-    drills: [
-      { word: "how much?", say: "rau MÂTCH", note: { en: "Ask any price.", "pt-BR": "Pergunte qualquer preço." } },
-    ],
+    objective: { en: "Ask which belt serves your flight.", "pt-BR": "Perguntar qual esteira atende seu voo." },
+    environment: { mood: "neutral", baseNoise: 46 },
+    npc: { name: { en: "Ground Staff", "pt-BR": "Funcionário(a) de Solo" }, initials: "GS" },
+    drills: [{ word: "which belt?", say: "UÍTCH bélt", note: { en: "belt = baggage carousel.", "pt-BR": "belt = esteira de bagagem." } }],
     dialogueSteps: [
-      {
-        text: "Where to, mate?",
-        tr: { en: "Where are you going?", "pt-BR": "Para onde você vai?" },
-        ear: { en: "<b>“where to”</b> = “UÉR-tu”.", "pt-BR": "<b>“where to”</b> = “UÉR-tu”." },
-        audioPrompt: "Driver, leaning over, friendly-gruff: “Where to, mate?”",
-        basic: "Camden, please.", fluent: "To Camden, please.",
-      },
-      {
-        text: "Camden. About twenty-five pounds.",
-        tr: { en: "It'll cost around £25.", "pt-BR": "Vai custar uns £25." },
-        ear: { en: "<b>“pounds”</b> = “páunds”.", "pt-BR": "<b>“pounds”</b> = “páunds”." },
-        audioPrompt: "Driver, starting the meter: “Camden. About twenty-five pounds.”",
-        basic: "Okay.", fluent: "Okay, thank you.",
-      },
+      { text: "Flight BA-246? Belt 5, over there.", tr: { en: "Your bags are on belt 5.", "pt-BR": "Suas malas estão na esteira 5." }, ear: { en: "<b>“bélt fáiv”</b>", "pt-BR": "<b>“bélt fáiv”</b>" }, audioPrompt: "Staff, pointing across the hall: “Flight BA-246? Belt 5, over there.”", basic: "Thank you.", fluent: "Thanks — belt 5." },
     ],
   },
   {
-    sequence: 18, blockId: 1, indexInBlock: 18, phase: 3, threshold: 80,
-    sceneTitle: { en: "Hotel Check-in", "pt-BR": "Check-in no Hotel" },
+    sequence: 12, blockId: 1, indexInBlock: 12, phase: 2, subBlock: "1.3", threshold: 80,
+    sceneTitle: { en: "The Missing Bag", "pt-BR": "A Mala Sumida" },
     contextDescription: {
-      en: "A warm, quiet lobby after the cold outside. The receptionist greets you with a practiced smile and a screen full of names. You're exhausted — keep it simple.",
-      "pt-BR": "Um lobby quente e silencioso depois do frio lá fora. A recepcionista te cumprimenta com um sorriso ensaiado e uma tela cheia de nomes. Você está exausto(a) — seja simples.",
+      en: "Bags come and go — but not yours. The belt slows, then stops. Panic rises. You must report it clearly.",
+      "pt-BR": "Malas vêm e vão — menos a sua. A esteira desacelera e para. O pânico sobe. Você precisa relatar com clareza.",
     },
-    objective: {
-      en: "Claim a reservation and receive a room. Words: reservation, name, key, room.",
-      "pt-BR": "Confirmar a reserva e receber o quarto. Palavras: reservation, name, key, room.",
-    },
-    environment: { mood: "pleased", baseNoise: 24 },
-    npc: { name: { en: "Receptionist", "pt-BR": "Recepcionista" }, initials: "RC" },
-    drills: [
-      { word: "reservation", say: "re-zâr-VÊI-shân", note: { en: "= a booking under your name.", "pt-BR": "= uma reserva no seu nome." } },
-    ],
+    objective: { en: "Report that your bag didn't arrive.", "pt-BR": "Relatar que sua mala não chegou." },
+    environment: { mood: "neutral", baseNoise: 44 },
+    npc: { name: { en: "Ground Staff", "pt-BR": "Funcionário(a) de Solo" }, initials: "GS" },
+    drills: [{ word: "I can't find it", say: "ai ként FÁIND it", note: { en: "Report something missing.", "pt-BR": "Relatar algo sumido." } }],
     dialogueSteps: [
-      {
-        text: "Good morning. Do you have a reservation?",
-        tr: { en: "Did you book a room in advance?", "pt-BR": "Você tem uma reserva?" },
-        ear: { en: "<b>“reservation”</b> = “re-zâr-VÊI-shân”.", "pt-BR": "<b>“reservation”</b> = “re-zâr-VÊI-shân”." },
-        audioPrompt: "Receptionist, warm: “Good morning. Do you have a reservation?”",
-        basic: "Yes.", fluent: "Yes, under Pires.",
-      },
-      {
-        text: "Here's your key. Room 204, second floor.",
-        tr: { en: "Take your key — room 204, floor 2.", "pt-BR": "Aqui está a chave — quarto 204, 2º andar." },
-        ear: { en: "<b>“second floor”</b> = “SÉ-cãnd flór”.", "pt-BR": "<b>“second floor”</b> = “SÉ-cãnd flór”." },
-        audioPrompt: "Receptionist, sliding a key card: “Here's your key. Room 204, second floor.”",
-        basic: "Thank you.", fluent: "Thank you very much.",
-      },
+      { text: "The belt's empty now. Is your bag here?", tr: { en: "Did your bag arrive?", "pt-BR": "Sua mala chegou?" }, ear: { en: "<b>“ÉM-ti”</b>", "pt-BR": "<b>“ÉM-ti”</b>" }, audioPrompt: "Staff, checking the belt: “The belt's empty now. Is your bag here?”", basic: "No. I can't find it.", fluent: "No — my bag isn't here." },
     ],
   },
   {
-    sequence: 19, blockId: 1, indexInBlock: 19, phase: 3, threshold: 80,
-    sceneTitle: { en: "Ordering Food", "pt-BR": "Pedindo Comida" },
+    sequence: 13, blockId: 1, indexInBlock: 13, phase: 2, subBlock: "1.3", threshold: 80,
+    sceneTitle: { en: "Describing Your Bag", "pt-BR": "Descrevendo a Mala" },
     contextDescription: {
-      en: "A busy corner café: steam, chatter, the hiss of an espresso machine. The server taps a screen and looks up — you have about three seconds to order.",
-      "pt-BR": "Um café de esquina movimentado: vapor, conversas, o chiado da máquina de espresso. O atendente toca a tela e te olha — você tem uns três segundos para pedir.",
+      en: "At the desk, an agent opens a form. They need details — colour, size, anything that marks it out.",
+      "pt-BR": "No balcão, um agente abre um formulário. Precisam de detalhes — cor, tamanho, algo que a destaque.",
     },
-    objective: {
-      en: "Order an item and choose eat-in or takeaway. Words: a coffee, please; take away.",
-      "pt-BR": "Pedir um item e escolher comer no local ou levar. Palavras: a coffee, please; take away.",
+    objective: { en: "Describe a bag: colour, size, distinguishing marks.", "pt-BR": "Descrever a mala: cor, tamanho, marcas." },
+    environment: { mood: "neutral", baseNoise: 42 },
+    npc: { name: { en: "Lost Luggage Agent", "pt-BR": "Agente de Bagagem" }, initials: "LA" },
+    drills: [
+      { word: "black, medium", say: "BLÉK, MÍ-dium", note: { en: "Colour + size.", "pt-BR": "Cor + tamanho." } },
+      { word: "a red ribbon", say: "a RÉD RÍ-bãn", note: { en: "A distinguishing mark.", "pt-BR": "Uma marca distintiva." } },
+    ],
+    dialogueSteps: [
+      { text: "Describe it for me. Colour and size?", tr: { en: "What does it look like?", "pt-BR": "Como ela é?" }, ear: { en: "<b>“KÂ-lâr”</b>", "pt-BR": "<b>“KÂ-lâr”</b>" }, audioPrompt: "Agent, pen ready: “Describe it for me. Colour and size?”", basic: "Black, medium.", fluent: "It's black, medium-sized, with a red ribbon." },
+    ],
+  },
+  {
+    sequence: 14, blockId: 1, indexInBlock: 14, phase: 2, subBlock: "1.3", threshold: 80,
+    sceneTitle: { en: "The Claim", "pt-BR": "O Registro" },
+    contextDescription: {
+      en: "Paperwork. A reference number. A promise that it 'should' arrive tomorrow. You need to confirm how they'll reach you.",
+      "pt-BR": "Papelada. Um número de referência. A promessa de que 'deve' chegar amanhã. Você precisa confirmar como vão te contatar.",
     },
+    objective: { en: "Give contact info and confirm next steps.", "pt-BR": "Dar contato e confirmar os próximos passos." },
+    environment: { mood: "neutral", baseNoise: 40 },
+    npc: { name: { en: "Lost Luggage Agent", "pt-BR": "Agente de Bagagem" }, initials: "LA" },
+    drills: [{ word: "my phone number", say: "mai FÔUN NÂM-bâr", note: { en: "How they'll contact you.", "pt-BR": "Como vão te contatar." } }],
+    dialogueSteps: [
+      { text: "We'll deliver it. What's your phone number?", tr: { en: "They need your phone number.", "pt-BR": "Precisam do seu telefone." }, ear: { en: "<b>“NÂM-bâr”</b>", "pt-BR": "<b>“NÂM-bâr”</b>" }, audioPrompt: "Agent, typing: “We'll deliver it. What's your phone number?”", basic: "One moment.", fluent: "Sure — let me give it to you." },
+      { text: "Here's your reference number. Keep it.", tr: { en: "Keep this claim number.", "pt-BR": "Guarde este número de referência." }, ear: { en: "<b>“RÉ-frâns”</b>", "pt-BR": "<b>“RÉ-frâns”</b>" }, audioPrompt: "Agent, handing a slip: “Here's your reference number. Keep it.”", basic: "Thank you.", fluent: "Thank you, I'll keep it safe." },
+    ],
+  },
+  {
+    sequence: 15, blockId: 1, indexInBlock: 15, phase: 2, subBlock: "1.3", threshold: 80,
+    sceneTitle: { en: "Finding the Toilet", "pt-BR": "Achando o Banheiro" },
+    contextDescription: {
+      en: "After the stress, an urgent, very human need. You stop a passing cleaner — fast.",
+      "pt-BR": "Depois do estresse, uma necessidade urgente e muito humana. Você para um faxineiro que passa — rápido.",
+    },
+    objective: { en: "Ask for the toilet and understand directions.", "pt-BR": "Perguntar pelo banheiro e entender a direção." },
     environment: { mood: "neutral", baseNoise: 48 },
-    npc: { name: { en: "Café Server", "pt-BR": "Atendente do Café" }, initials: "SV" },
-    drills: [
-      { word: "I'll have…", say: "ail RÉV", note: { en: "Natural way to order.", "pt-BR": "Jeito natural de pedir." } },
-    ],
+    npc: { name: { en: "Cleaner", "pt-BR": "Faxineiro(a)" }, initials: "CL" },
+    drills: [{ word: "where is the toilet?", say: "UÉR iz dâ TÓI-lët", note: { en: "UK: toilet, not bathroom.", "pt-BR": "Reino Unido: toilet, não bathroom." } }],
     dialogueSteps: [
-      {
-        text: "What can I get you?",
-        tr: { en: "What would you like to order?", "pt-BR": "O que você vai querer?" },
-        ear: { en: "<b>“get you”</b> blends: “gué-tchu”.", "pt-BR": "<b>“get you”</b> junta: “gué-tchu”." },
-        audioPrompt: "Server, over café noise: “What can I get you?”",
-        basic: "A coffee, please.", fluent: "A coffee and a sandwich, please.",
-      },
-      {
-        text: "Eat in or take away?",
-        tr: { en: "Here, or to go?", "pt-BR": "Comer aqui ou levar?" },
-        ear: { en: "<b>“take away”</b> = “têik-a-UÊI”.", "pt-BR": "<b>“take away”</b> = “têik-a-UÊI”." },
-        audioPrompt: "Server, hand on a cup: “Eat in or take away?”",
-        basic: "Take away.", fluent: "Take away, please.",
-      },
+      { text: "Toilets? Straight ahead, on the right.", tr: { en: "Toilets are ahead, on the right.", "pt-BR": "Os banheiros são em frente, à direita." }, ear: { en: "<b>“strêit a-RÉD”</b>", "pt-BR": "<b>“strêit a-RÉD”</b>" }, audioPrompt: "Cleaner, pointing: “Toilets? Straight ahead, on the right.”", basic: "Thank you.", fluent: "Thanks a lot." },
+    ],
+  },
+
+  /* ===================== 1.4 — CONNECTION (UK SIM) ===================== */
+  {
+    sequence: 16, blockId: 1, indexInBlock: 16, phase: 3, subBlock: "1.4", threshold: 80,
+    sceneTitle: { en: "Finding a SIM Shop", "pt-BR": "Achando uma Loja de SIM" },
+    contextDescription: {
+      en: "Arrivals hall: bright kiosks, rolling suitcases, announcements overlapping. You need a phone connection before anything else.",
+      "pt-BR": "Saguão de chegadas: quiosques iluminados, malas rolando, avisos sobrepostos. Você precisa de conexão antes de tudo.",
+    },
+    objective: { en: "Ask where to buy a SIM card.", "pt-BR": "Perguntar onde comprar um chip (SIM)." },
+    environment: { mood: "neutral", baseNoise: 50 },
+    npc: { name: { en: "Info Desk", "pt-BR": "Balcão de Informações" }, initials: "ID" },
+    drills: [{ word: "a SIM card", say: "a SÍM kard", note: { en: "The phone chip.", "pt-BR": "O chip do celular." } }],
+    dialogueSteps: [
+      { text: "A SIM card? The shop's just past Costa, on the left.", tr: { en: "The shop is past the café, on the left.", "pt-BR": "A loja fica depois do café, à esquerda." }, ear: { en: "<b>“past KÓS-ta”</b>", "pt-BR": "<b>“pést KÓS-ta”</b>" }, audioPrompt: "Info desk, pointing: “A SIM card? The shop's just past Costa, on the left.”", basic: "Thank you.", fluent: "Great, thank you." },
     ],
   },
   {
-    sequence: 20, blockId: 1, indexInBlock: 20, phase: 3, threshold: 80,
-    sceneTitle: { en: "Emergency — Get Help", "pt-BR": "Emergência — Peça Ajuda" },
+    sequence: 17, blockId: 1, indexInBlock: 17, phase: 3, subBlock: "1.4", threshold: 80,
+    sceneTitle: { en: "Buying a SIM", "pt-BR": "Comprando o Chip" },
     contextDescription: {
-      en: "Rain, unfamiliar streets, no signal on your phone, and a wrong turn. Your chest tightens again — but this time you have words. A police officer notices you.",
-      "pt-BR": "Chuva, ruas estranhas, sem sinal no celular e uma curva errada. O peito aperta de novo — mas desta vez você tem palavras. Um policial nota você.",
+      en: "A tiny shop, a bored clerk, a wall of plans. You need a tourist SIM — say it simply.",
+      "pt-BR": "Loja pequena, atendente entediado, uma parede de planos. Você precisa de um chip de turista — diga de forma simples.",
     },
-    objective: {
-      en: "Get urgent help fast: say you're lost and ask for a hospital. Words: lost, help, hospital, where.",
-      "pt-BR": "Conseguir ajuda urgente rápido: dizer que está perdido(a) e pedir um hospital. Palavras: lost, help, hospital, where.",
+    objective: { en: "Ask for a tourist SIM clearly.", "pt-BR": "Pedir um chip de turista com clareza." },
+    environment: { mood: "neutral", baseNoise: 48 },
+    npc: { name: { en: "Shop Clerk", "pt-BR": "Atendente" }, initials: "SC" },
+    drills: [{ word: "for a tourist", say: "for a TÚR-ist", note: { en: "Short-term visitor plan.", "pt-BR": "Plano de visitante de curto prazo." } }],
+    dialogueSteps: [
+      { text: "Hiya. What are you after?", tr: { en: "Hello — what do you want?", "pt-BR": "Olá — o que você procura?" }, ear: { en: "<b>“RÁI-ya”</b> = casual hello", "pt-BR": "<b>“RÁI-ya”</b> = oi informal" }, audioPrompt: "Clerk, casual: “Hiya. What are you after?”", basic: "A SIM card, please.", fluent: "A tourist SIM card, please." },
+      { text: "Sure. How long are you here for?", tr: { en: "For how long?", "pt-BR": "Por quanto tempo?" }, ear: { en: "<b>“rir for”</b>", "pt-BR": "<b>“rir for”</b>" }, audioPrompt: "Clerk: “Sure. How long are you here for?”", basic: "One week.", fluent: "About a week." },
+    ],
+  },
+  {
+    sequence: 18, blockId: 1, indexInBlock: 18, phase: 3, subBlock: "1.4", threshold: 80,
+    sceneTitle: { en: "Choosing a Data Plan", "pt-BR": "Escolhendo o Plano de Dados" },
+    contextDescription: {
+      en: "Numbers fly: gigabytes, pounds, validity. You must compare and pick — and confirm the price.",
+      "pt-BR": "Números voam: gigabytes, libras, validade. Você precisa comparar e escolher — e confirmar o preço.",
     },
-    environment: { mood: "hostile", baseNoise: 54 },
-    npc: { name: { en: "Police Officer", "pt-BR": "Policial" }, initials: "PO" },
+    objective: { en: "Compare data, confirm price, decide.", "pt-BR": "Comparar dados, confirmar preço, decidir." },
+    environment: { mood: "neutral", baseNoise: 46 },
+    npc: { name: { en: "Shop Clerk", "pt-BR": "Atendente" }, initials: "SC" },
+    drills: [{ word: "how much?", say: "rau MÂTCH", note: { en: "Ask the price.", "pt-BR": "Pergunte o preço." } }],
+    dialogueSteps: [
+      { text: "Ten gigs is fifteen quid. Twenty is twenty.", tr: { en: "10GB = £15, 20GB = £20. ('quid' = pounds)", "pt-BR": "10GB = £15, 20GB = £20. ('quid' = libras)" }, ear: { en: "<b>“kwid”</b> = pounds (slang)", "pt-BR": "<b>“kuíd”</b> = libras (gíria)" }, audioPrompt: "Clerk, fast: “Ten gigs is fifteen quid. Twenty is twenty.”", basic: "The ten, please.", fluent: "I'll take the ten gigs, please." },
+      { text: "Lovely. That's fifteen pounds.", tr: { en: "Okay — £15.", "pt-BR": "Ok — £15." }, ear: { en: "<b>“LÂV-li”</b> = great (UK)", "pt-BR": "<b>“LÂV-li”</b> = ótimo (UK)" }, audioPrompt: "Clerk, tapping the till: “Lovely. That's fifteen pounds.”", basic: "Here.", fluent: "Here you go." },
+    ],
+  },
+  {
+    sequence: 19, blockId: 1, indexInBlock: 19, phase: 3, subBlock: "1.4", threshold: 80,
+    sceneTitle: { en: "It's Not Working", "pt-BR": "Não Está Funcionando" },
+    contextDescription: {
+      en: "Outside the shop, the SIM is in — but no signal, no data. Frustration mounts. You go back in.",
+      "pt-BR": "Fora da loja, o chip está dentro — mas sem sinal, sem dados. A frustração cresce. Você volta lá dentro.",
+    },
+    objective: { en: "Explain a problem: no signal / not activated.", "pt-BR": "Explicar um problema: sem sinal / não ativado." },
+    environment: { mood: "hostile", baseNoise: 50 },
+    npc: { name: { en: "Shop Clerk", "pt-BR": "Atendente" }, initials: "SC" },
+    drills: [{ word: "it's not working", say: "its NÓT UÂR-kin", note: { en: "Report a fault.", "pt-BR": "Relatar um defeito." } }],
+    dialogueSteps: [
+      { text: "Back already? What's wrong?", tr: { en: "What's the problem?", "pt-BR": "Qual é o problema?" }, ear: { en: "<b>“uâts róng”</b>", "pt-BR": "<b>“uâts róng”</b>" }, audioPrompt: "Clerk, surprised: “Back already? What's wrong?”", basic: "It's not working.", fluent: "It's not working — there's no signal." },
+      { text: "No signal at all? Let me see it.", tr: { en: "Let me check the phone.", "pt-BR": "Deixa eu ver o celular." }, ear: { en: "<b>“SÍG-nâl”</b>", "pt-BR": "<b>“SÍG-nâl”</b>" }, audioPrompt: "Clerk, holding out a hand: “No signal at all? Let me see it.”", basic: "Here.", fluent: "Sure — here it is." },
+    ],
+  },
+  {
+    sequence: 20, blockId: 1, indexInBlock: 20, phase: 3, subBlock: "1.4", threshold: 80,
+    sceneTitle: { en: "Demanding a Fix", "pt-BR": "Exigindo Solução" },
+    contextDescription: {
+      en: "The clerk shrugs: 'should activate in an hour.' Not good enough. You hold your ground — politely, firmly.",
+      "pt-BR": "O atendente dá de ombros: 'deve ativar em uma hora.' Não basta. Você se impõe — com educação e firmeza.",
+    },
+    objective: { en: "Insist on activation now, or a refund.", "pt-BR": "Insistir na ativação agora, ou reembolso." },
+    environment: { mood: "hostile", baseNoise: 52 },
+    npc: { name: { en: "Shop Clerk", "pt-BR": "Atendente" }, initials: "SC" },
+    drills: [{ word: "activate it now", say: "ÉK-ti-vêit it náu", note: { en: "Demand action.", "pt-BR": "Exigir ação." } }],
+    dialogueSteps: [
+      { text: "It should activate within the hour.", tr: { en: "It'll work in an hour (he says).", "pt-BR": "Vai funcionar em uma hora (diz ele)." }, ear: { en: "<b>“ÉK-ti-vêit”</b>", "pt-BR": "<b>“ÉK-ti-vêit”</b>" }, audioPrompt: "Clerk, dismissive: “It should activate within the hour.”", basic: "Activate it now, please.", fluent: "Please activate it now, or refund me." },
+      { text: "Alright, alright. Give me a minute.", tr: { en: "Okay — he'll do it now.", "pt-BR": "Ok — ele vai fazer agora." }, ear: { en: "<b>“ã MÍ-nit”</b>", "pt-BR": "<b>“ã MÍ-nit”</b>" }, audioPrompt: "Clerk, relenting: “Alright, alright. Give me a minute.”", basic: "Thank you.", fluent: "Thank you, I appreciate it." },
+    ],
+  },
+
+  /* ===================== 1.5 — THE ESCAPE & REWARD ===================== */
+  {
+    sequence: 21, blockId: 1, indexInBlock: 21, phase: 3, subBlock: "1.5", threshold: 80,
+    sceneTitle: { en: "Finding the Tube", "pt-BR": "Achando o Metrô" },
+    contextDescription: {
+      en: "Down toward the Underground: tiled tunnels, rushing commuters, a warm gust from the trains and a wall of signs.",
+      "pt-BR": "Descendo para o Underground: túneis de azulejo, passageiros apressados, uma rajada quente dos trens e uma parede de placas.",
+    },
+    objective: { en: "Ask the way to the Underground.", "pt-BR": "Perguntar o caminho para o metrô." },
+    environment: { mood: "neutral", baseNoise: 58 },
+    npc: { name: { en: "Commuter", "pt-BR": "Passageiro(a)" }, initials: "PC" },
+    drills: [{ word: "the Underground", say: "di ÂN-dâr-graund", note: { en: "= the Tube / metro.", "pt-BR": "= o metrô de Londres." } }],
+    dialogueSteps: [
+      { text: "The Tube? Follow the blue signs, down the escalator.", tr: { en: "Follow blue signs, down the escalator.", "pt-BR": "Siga as placas azuis, desça a escada rolante." }, ear: { en: "<b>“tiúb”</b>", "pt-BR": "<b>“tiúb”</b>" }, audioPrompt: "Commuter, hurried: “The Tube? Follow the blue signs, down the escalator.”", basic: "Thank you.", fluent: "Thanks — blue signs, got it." },
+    ],
+  },
+  {
+    sequence: 22, blockId: 1, indexInBlock: 22, phase: 3, subBlock: "1.5", threshold: 80,
+    sceneTitle: { en: "Buying an Oyster Card", "pt-BR": "Comprando o Oyster Card" },
+    contextDescription: {
+      en: "A staffed ticket window beside the gates. You need an Oyster card and some credit to get into town.",
+      "pt-BR": "Uma bilheteria ao lado das catracas. Você precisa de um Oyster card e crédito para chegar à cidade.",
+    },
+    objective: { en: "Buy an Oyster card and top it up.", "pt-BR": "Comprar um Oyster card e colocar crédito." },
+    environment: { mood: "neutral", baseNoise: 54 },
+    npc: { name: { en: "Station Staff", "pt-BR": "Funcionário(a) da Estação" }, initials: "ST" },
     drills: [
-      { word: "I'm lost", say: "aim LÓST", note: { en: "Three words that summon help.", "pt-BR": "Três palavras que trazem ajuda." } },
-      { word: "where is the hospital?", say: "UÉR iz dâ RÓS-pi-tâl", note: { en: "Find urgent care.", "pt-BR": "Encontrar atendimento de emergência." } },
+      { word: "an Oyster card", say: "ãn ÓIS-târ kard", note: { en: "London travel card.", "pt-BR": "Cartão de transporte de Londres." } },
+      { word: "top up", say: "TÓP âp", note: { en: "= add credit.", "pt-BR": "= adicionar crédito." } },
     ],
     dialogueSteps: [
-      {
-        text: "You alright? You look lost.",
-        tr: { en: "Are you okay? You seem lost.", "pt-BR": "Você está bem? Parece perdido(a)." },
-        ear: { en: "<b>“lost”</b> = “lóst” (short, hard T).", "pt-BR": "<b>“lost”</b> = “lóst” (curto, T seco)." },
-        audioPrompt: "Officer, concerned, in the rain: “You alright? You look lost.”",
-        basic: "I'm lost.", fluent: "I'm lost. Can you help me?",
-      },
-      {
-        text: "Okay. What do you need?",
-        tr: { en: "Tell me what you need.", "pt-BR": "Diga o que você precisa." },
-        ear: { en: "<b>“hospital”</b> = “RÓS-pi-tâl”.", "pt-BR": "<b>“hospital”</b> = “RÓS-pi-tâl”." },
-        audioPrompt: "Officer, steady, hand on shoulder: “Okay. What do you need?”",
-        basic: "A hospital.", fluent: "Where is the nearest hospital?",
-      },
+      { text: "Next! What can I do for you?", tr: { en: "How can I help?", "pt-BR": "Como posso ajudar?" }, ear: { en: "<b>“nékst”</b>", "pt-BR": "<b>“nékst”</b>" }, audioPrompt: "Staff, through glass: “Next! What can I do for you?”", basic: "An Oyster card, please.", fluent: "An Oyster card, and top up ten pounds, please." },
+      { text: "Ten pounds on it. Anything else?", tr: { en: "£10 added — anything more?", "pt-BR": "£10 adicionados — mais algo?" }, ear: { en: "<b>“É-ni-thin éls”</b>", "pt-BR": "<b>“É-ni-thin éls”</b>" }, audioPrompt: "Staff, sliding the card: “Ten pounds on it. Anything else?”", basic: "No, thank you.", fluent: "No, that's all, thanks." },
+    ],
+  },
+  {
+    sequence: 23, blockId: 1, indexInBlock: 23, phase: 3, subBlock: "1.5", threshold: 80,
+    sceneTitle: { en: "The Broken Machine", "pt-BR": "A Máquina Quebrada" },
+    contextDescription: {
+      en: "At the gate, your card won't tap. The machine flashes red, beeps, and a queue builds behind you, sighing.",
+      "pt-BR": "Na catraca, seu cartão não passa. A máquina pisca vermelho, apita, e uma fila se forma atrás de você, suspirando.",
+    },
+    objective: { en: "Report a broken machine and ask for help.", "pt-BR": "Relatar uma máquina quebrada e pedir ajuda." },
+    environment: { mood: "hostile", baseNoise: 56 },
+    npc: { name: { en: "Station Staff", "pt-BR": "Funcionário(a) da Estação" }, initials: "ST" },
+    drills: [{ word: "it won't work", say: "it UÔUNT UÂRK", note: { en: "Report a fault, fast.", "pt-BR": "Relatar defeito, rápido." } }],
+    dialogueSteps: [
+      { text: "Tap again. Still red? Stand aside, please.", tr: { en: "Try again; if it fails, step aside.", "pt-BR": "Tente de novo; se falhar, saia da frente." }, ear: { en: "<b>“tép a-GÉN”</b>", "pt-BR": "<b>“tép a-GÉN”</b>" }, audioPrompt: "Staff, over the queue noise: “Tap again. Still red? Stand aside, please.”", basic: "It won't work.", fluent: "It won't work — the machine's broken." },
+      { text: "Okay, I'll let you through this gate.", tr: { en: "He'll open the gate for you.", "pt-BR": "Ele vai te liberar pela catraca." }, ear: { en: "<b>“let iu thrú”</b>", "pt-BR": "<b>“let iu thrú”</b>" }, audioPrompt: "Staff, opening the side gate: “Okay, I'll let you through this gate.”", basic: "Thank you!", fluent: "Thank you so much!" },
+    ],
+  },
+  {
+    sequence: 24, blockId: 1, indexInBlock: 24, phase: 3, subBlock: "1.5", threshold: 80,
+    sceneTitle: { en: "Mind the Gap", "pt-BR": "Cuidado com o Vão" },
+    contextDescription: {
+      en: "On the platform: a roar of wind, screeching brakes, the famous announcement, and doors that close in seconds.",
+      "pt-BR": "Na plataforma: um rugido de vento, freios guinchando, o famoso aviso, e portas que fecham em segundos.",
+    },
+    objective: { en: "Confirm the right line/direction and board in time.", "pt-BR": "Confirmar a linha/direção certa e embarcar a tempo." },
+    environment: { mood: "neutral", baseNoise: 64 },
+    npc: { name: { en: "Commuter", "pt-BR": "Passageiro(a)" }, initials: "PC" },
+    drills: [{ word: "is this the right train?", say: "iz dis dâ RÁIT trêin", note: { en: "Confirm before boarding.", "pt-BR": "Confirme antes de embarcar." } }],
+    dialogueSteps: [
+      { text: "Central line to the city? Yeah, this one. Quick!", tr: { en: "Yes, this is your train — hurry!", "pt-BR": "Sim, é o seu trem — rápido!" }, ear: { en: "<b>“iéa, dis uân”</b>", "pt-BR": "<b>“iéa, dis uân”</b>" }, audioPrompt: "Commuter, shouting over the train: “Central line to the city? Yeah, this one. Quick!”", basic: "Thank you!", fluent: "Thanks — just in time!" },
+    ],
+  },
+  {
+    sequence: 25, blockId: 1, indexInBlock: 25, phase: 3, subBlock: "1.5", threshold: 75,
+    kind: "bonus",
+    triggerSelfieShare: true,
+    sceneTitle: { en: "Bonus — Coffee by the River", "pt-BR": "Bônus — Café à Beira do Rio" },
+    contextDescription: {
+      en: "You made it. The chaos fades. Sunlight on the Thames, Big Ben behind you, a quiet café. Order a coffee and breathe — you survived London's first day.",
+      "pt-BR": "Você conseguiu. O caos se dissolve. Sol no Tâmisa, o Big Ben atrás de você, um café tranquilo. Peça um café e respire — você sobreviveu ao primeiro dia em Londres.",
+    },
+    objective: { en: "A relaxed reward: order a coffee and enjoy the victory.", "pt-BR": "Uma recompensa tranquila: pedir um café e celebrar a vitória." },
+    environment: { mood: "pleased", baseNoise: 30 },
+    npc: { name: { en: "Barista", "pt-BR": "Barista" }, initials: "BA" },
+    drills: [{ word: "a flat white, please", say: "a FLÉT UÁIT, plíz", note: { en: "A classic London coffee.", "pt-BR": "Um café clássico de Londres." } }],
+    dialogueSteps: [
+      { text: "Lovely day, isn't it? What can I get you?", tr: { en: "Nice day — what would you like?", "pt-BR": "Belo dia — o que você quer?" }, ear: { en: "<b>“LÂV-li dêi”</b>", "pt-BR": "<b>“LÂV-li dêi”</b>" }, audioPrompt: "Barista, warm and relaxed: “Lovely day, isn't it? What can I get you?”", basic: "A coffee, please.", fluent: "A flat white, please." },
+      { text: "Coming right up. First time in London?", tr: { en: "Sure — first time here?", "pt-BR": "Claro — primeira vez aqui?" }, ear: { en: "<b>“fârst táim”</b>", "pt-BR": "<b>“fârst táim”</b>" }, audioPrompt: "Barista, making the coffee: “Coming right up. First time in London?”", basic: "Yes. I made it.", fluent: "Yes — and I made it through the airport!" },
     ],
   },
 ];

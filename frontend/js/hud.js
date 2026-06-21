@@ -77,6 +77,7 @@
   let sceneThreshold = 80;       // must stay >= firestore.rules threshold (80)
   let sceneTitleObj = null;      // localized {en, pt-BR} when content-driven
   let learnerLevel = "absolute_beginner";  // adapts difficulty (from profile.level)
+  let sceneSelfie = false;                 // bonus modules with triggerSelfieShare
 
   /* ---------- State ---------- */
   const state = {
@@ -160,11 +161,13 @@
       body.classList.toggle("mood-hostile", env.mood === "hostile");
       body.classList.toggle("mood-pleased", env.mood === "pleased");
       state.baseNoise = typeof env.baseNoise === "number" ? env.baseNoise : 24;
+      sceneSelfie = !!content.triggerSelfieShare;
     } else {
       TURNS = DEFAULT_TURNS;
       sceneThreshold = 80;
       sceneTitleObj = null;
       state.baseNoise = 24;
+      sceneSelfie = false;
     }
     renderSceneTitle();
 
@@ -420,7 +423,7 @@
     const score = Math.round(Math.min(100, 38 + avgAcc * 46 + state.patience * 0.16));
     const passedFinal = passed && score >= sceneThreshold;   // scene threshold (>= rules' 80)
 
-    state.conseq = { passedFinal: passedFinal, score: score, xp: Math.round(state.xp), reasonKey: reasonKey };
+    state.conseq = { passedFinal: passedFinal, score: score, xp: Math.round(state.xp), reasonKey: reasonKey, selfie: sceneSelfie && passedFinal };
 
     body.classList.toggle("mood-pleased", passedFinal);
     el("consequence").classList.toggle("rejected", !passedFinal);
@@ -457,6 +460,8 @@
       `<span class="score-chip">${I18n.t("conseq.chipXp")} <b>+${c.xp}</b></span>` +
       `<span class="score-chip">${I18n.t("conseq.chipMode")} <b>${I18n.t("mode." + state.mode)}</b></span>`;
     el("conseq-continue").textContent = I18n.t(c.passedFinal ? "conseq.continueNext" : "conseq.replay");
+    const shareBtn = el("share-victory");
+    if (shareBtn) shareBtn.hidden = !c.selfie;   // viral loop: only on bonus victory
   }
 
   el("conseq-continue").addEventListener("click", () => {
@@ -469,6 +474,21 @@
   });
 
   el("exit-btn").addEventListener("click", () => (window.location.href = "dashboard.html"));
+
+  /* ---------- Viral loop: victory selfie (bonus modules) ---------- */
+  const shareVictoryBtn = el("share-victory");
+  if (shareVictoryBtn) shareVictoryBtn.addEventListener("click", () => {
+    if (window.LBSelfie) window.LBSelfie.open({
+      eyebrow: "London Tourist",
+      title: I18n.t("conseq.shareTitle"),
+      captureLabel: I18n.t("conseq.capture"),
+      shareLabel: I18n.t("conseq.share"),
+      retakeLabel: I18n.t("conseq.retake"),
+      closeLabel: I18n.t("conseq.close"),
+      tagline: "London Tourist — Survived Day 1",
+      shareText: "I survived my first day in London with LinguoBound! \uD83C\uDDEC\uD83C\uDDE7",
+    });
+  });
 
   /* ---------- Language change: re-render localized content ---------- */
   window.addEventListener("i18n:change", () => {
