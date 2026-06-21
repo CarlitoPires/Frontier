@@ -49,6 +49,24 @@ import {
   let selectedLevel = "absolute_beginner";
 
   const levelField = $("level-field");
+  const inviteField = $("invite-field");
+
+  // Deterministic personal invite code + referral wiring.
+  function inviteCodeFor(uid) { return uid.slice(0, 6).toUpperCase(); }
+  async function setupReferral(uid, enteredCode) {
+    try { await setDoc(doc(db, "inviteCodes", inviteCodeFor(uid)), { uid: uid }, { merge: true }); } catch (e) {}
+    const code = (enteredCode || "").trim().toUpperCase();
+    if (!code) return;
+    try {
+      const snap = await getDoc(doc(db, "inviteCodes", code));
+      if (snap.exists()) {
+        const inviterUid = snap.data().uid;
+        if (inviterUid && inviterUid !== uid) {
+          await setDoc(doc(db, "referrals", uid), { inviterUid: inviterUid, ts: serverTimestamp() });
+        }
+      }
+    } catch (e) { /* ignore */ }
+  }
 
   /* ---------- helpers ---------- */
   function setText(el, key) {
@@ -74,12 +92,14 @@ import {
       setText(footText, "auth.noCitizenship");
       setText(toggleLink, "auth.requestVisa");
       if (levelField) levelField.hidden = true;
+      if (inviteField) inviteField.hidden = true;
     } else {
       setText(headingEl, "auth.citizenSignup");
       setText(submitBtn, "auth.createAccount");
       setText(footText, "auth.haveCitizenship");
       setText(toggleLink, "auth.doLogin");
       if (levelField) levelField.hidden = false;   // ask the level at sign-up
+      if (inviteField) inviteField.hidden = false;
     }
   }
 
@@ -152,10 +172,12 @@ import {
           role: "user",
           plan: "free",
           level: selectedLevel,
+          inviteCode: inviteCodeFor(cred.user.uid),
           nativeLang: I18n.getLang(),
           subscription: { provider: "mercadopago", status: "none", externalId: null, currentPeriodEnd: null },
           createdAt: serverTimestamp(),
         });
+        await setupReferral(cred.user.uid, $("invite-code") && $("invite-code").value);
         // New accounts are never admin -> straight to the dashboard.
         fadeTo("dashboard.html");
       }
@@ -192,10 +214,12 @@ import {
           role: "user",
           plan: "free",
           level: selectedLevel,
+          inviteCode: inviteCodeFor(cred.user.uid),
           nativeLang: I18n.getLang(),
           subscription: { provider: "mercadopago", status: "none", externalId: null, currentPeriodEnd: null },
           createdAt: serverTimestamp(),
         });
+        await setupReferral(cred.user.uid, $("invite-code") && $("invite-code").value);
       }
       await routeAfterAuth(cred.user);
     } catch (err) {

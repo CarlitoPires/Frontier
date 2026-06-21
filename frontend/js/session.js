@@ -25,9 +25,11 @@
 
 import {
   auth, db, onAuthStateChanged, signOut,
-  doc, getDoc, setDoc, serverTimestamp, writeBatch, increment, CONFIG_READY,
+  doc, getDoc, setDoc, serverTimestamp, writeBatch, increment,
+  collection, getDocs, query, where, CONFIG_READY,
 } from "./firebase-init.js";
-import { BLOCK0_BY_SEQUENCE } from "./content-block0.js";
+import { CONTENT_BY_SEQUENCE } from "./content-registry.js";
+import { computeStreak, visaTier } from "./streak.js";
 
 (function () {
   "use strict";
@@ -52,6 +54,9 @@ import { BLOCK0_BY_SEQUENCE } from "./content-block0.js";
     assist: false,           // slow-tempo assist when the learner struggled
     unlockedSequence: 1,
     completedCount: 0,
+    streak: null,            // { count, best, lastDay, shields }
+    visa: "tourist",
+    referrals: 0,
     module: null,            // the module being played on the sim page
     submit: submitResult,
   };
@@ -92,6 +97,10 @@ import { BLOCK0_BY_SEQUENCE } from "./content-block0.js";
       sequence: mod.sequence,
       status: passed ? "PROFICIENCY_PASSED" : "ATTEMPTED",
       score: Math.round(score),
+      accuracy: opts && typeof opts.accuracy === "number" ? Math.round(opts.accuracy * 100) / 100 : null,
+      patienceEnd: opts && typeof opts.patienceEnd === "number" ? Math.round(opts.patienceEnd) : null,
+      retries: opts && typeof opts.retries === "number" ? opts.retries : 0,
+      mode: (opts && opts.mode) || "basic",
       attempts: increment(1),
       updatedAt: serverTimestamp(),
       passedAt: passed ? serverTimestamp() : null,
@@ -101,11 +110,20 @@ import { BLOCK0_BY_SEQUENCE } from "./content-block0.js";
 
     if (newlyPassed) {
       const newUnlocked = Math.max(LBProgress.unlockedSequence, mod.sequence + 1);
+      const acc = opts && typeof opts.accuracy === "number" ? opts.accuracy : 0.7;
+      const pat = opts && typeof opts.patienceEnd === "number" ? opts.patienceEnd : 70;
+      const ret = opts && typeof opts.retries === "number" ? opts.retries : 0;
       batch.set(sumRef, {
         unlockedSequence: newUnlocked,
         completedCount: increment(1),
         activeCity: "London",
         lastModuleId: String(mod.sequence),
+        // Running aggregates that power the real metrics radar.
+        gradedCount: increment(1),
+        sumAccuracy: increment(acc),
+        sumPatience: increment(pat),
+        sumRetries: increment(ret),
+        lastAccuracy: acc,
         updatedAt: serverTimestamp(),
       }, { merge: true });
       LBProgress.unlockedSequence = newUnlocked;
@@ -129,7 +147,7 @@ import { BLOCK0_BY_SEQUENCE } from "./content-block0.js";
       const c = await getDoc(doc(db, "content", String(seq)));
       if (c.exists()) content = c.data();
     } catch (e) { /* not signed in / rules / network */ }
-    if (!content) content = BLOCK0_BY_SEQUENCE[seq] || null;  // bundled fallback
+    if (!content) content = CONTENT_BY_SEQUENCE[seq] || null;  // bundled fallback
     return content;
   }
 
@@ -164,7 +182,7 @@ import { BLOCK0_BY_SEQUENCE } from "./content-block0.js";
   /* ---------- preview fallback (no Firebase keys) ---------- */
   if (!CONFIG_READY) {
     if (isSimPage) {
-      const content = BLOCK0_BY_SEQUENCE[1] || null;
+      const content = CONTENT_BY_SEQUENCE[1] || null;
       LBProgress.module = { sequence: 1, blockId: 1, indexInBlock: 1, title: "Boarding", content: content };
     }
     LBProgress.level = "absolute_beginner";
@@ -189,6 +207,32 @@ import { BLOCK0_BY_SEQUENCE } from "./content-block0.js";
     LBProgress.level = (profile && profile.level) || "absolute_beginner";
     LBProgress.assist = !!(summary && summary.assistTempo);
 
+    // ----- Daily streak + Visa tier (the addiction loop) -----
+    const sumRef = doc(db, "progress", user.uid);
+    let streak = computeStreak(summary && summary.streak);
+    // Reconcile referral rewards: +1 Streak Shield per new referral (idempotent).
+    let referrals = (summary && summary.grantedReferrals) || 0;
+    try {
+      const snap = await getDocs(query(collection(db, "referrals"), where("inviterUid", "==", user.uid)));
+      referrals = snap.size;
+    } catch (e) { /* index/rules — ignore */ }
+    const granted = (summary && summary.grantedReferrals) || 0;
+    if (referrals > granted) streak.shields += (referrals - granted);
+
+    // Persist if anything changed today (avoid a write on every page view).
+    if ((summary && summary.streak && summary.streak.lastDay) !== streak.lastDay || referrals > granted) {
+      try {
+        await setDoc(sumRef, {
+          streak: { count: streak.count, best: streak.best, lastDay: streak.lastDay, shields: streak.shields },
+          grantedReferrals: referrals,
+          updatedAt: serverTimestamp(),
+        }, { merge: true });
+      } catch (e) { /* ignore */ }
+    }
+    LBProgress.streak = streak;
+    LBProgress.visa = visaTier(streak.count);
+    LBProgress.referrals = referrals;
+
     // Apply the citizen's saved language.
     if (profile && profile.nativeLang && window.I18n &&
         I18n.SUPPORTED.indexOf(profile.nativeLang) !== -1) {
@@ -207,6 +251,7 @@ import { BLOCK0_BY_SEQUENCE } from "./content-block0.js";
       user: user, profile: profile, progress: summary,
       unlockedSequence: unlocked, completedCount: completed,
       level: LBProgress.level,
+      streak: LBProgress.streak, visa: LBProgress.visa, referrals: LBProgress.referrals,
       module: LBProgress.module,
     };
     window.dispatchEvent(new CustomEvent("lb:session", { detail: window.LB_SESSION }));

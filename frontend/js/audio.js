@@ -36,10 +36,11 @@
   let unlocked = false;
   let muted = false;
   let listening = false;   // ducks the bed while the mic is open
-  let scene = { phase: 1, mood: "neutral", baseNoise: 40 };
+  let scene = { phase: 1, mood: "neutral", baseNoise: 40, rain: false };
   let intensity = 0.5;     // 0..1, from the live noise meter
   let pendingText = null;  // line to (re)speak once unlocked
   let speaking = false;
+  let rainSrc = null, rainFilter = null;
 
   /* ---------- noise buffers ---------- */
   function makeNoise(type) {
@@ -103,6 +104,23 @@
 
     source.start();
     lfo.start();
+
+    // Optional second layer: rain hiss (complex ambient overlap).
+    if (rainSrc) { try { rainSrc.stop(); } catch (e) {} rainSrc.disconnect(); rainSrc = null; }
+    if (rainFilter) { rainFilter.disconnect(); rainFilter = null; }
+    if (scene.rain) {
+      rainSrc = ctx.createBufferSource();
+      rainSrc.buffer = makeNoise("white");
+      rainSrc.loop = true;
+      rainFilter = ctx.createBiquadFilter();
+      rainFilter.type = "highpass";
+      rainFilter.frequency.value = 2600;
+      rainFilter.Q.value = 0.4;
+      rainSrc.connect(rainFilter);
+      rainFilter.connect(ambientGain);
+      rainSrc.start();
+    }
+
     applyGain(0.4);
   }
 
@@ -137,6 +155,7 @@
       phase: (s && s.phase) || 1,
       mood: (s && s.mood) || "neutral",
       baseNoise: (s && typeof s.baseNoise === "number") ? s.baseNoise : 40,
+      rain: !!(s && s.rain),
     };
     if (unlocked && supportsAudio) buildGraph();
   }

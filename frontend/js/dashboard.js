@@ -177,6 +177,53 @@
     CITIZEN.completedModules = typeof detail.completedCount === "number" ? detail.completedCount : 0;
     CITIZEN.currentModule = unlocked;
     CITIZEN.currentBlock = String(Math.ceil(unlocked / 25)).padStart(2, "0");
+
+    // REAL fluency radar, derived from the running voice/patience aggregates.
+    const pr = detail.progress;
+    if (pr && pr.gradedCount > 0) {
+      const g = pr.gradedCount;
+      const avgAcc = (pr.sumAccuracy || 0) / g;     // 0..1 pronunciation
+      const avgPat = (pr.sumPatience || 0) / g;     // 0..100 composure
+      const avgRet = (pr.sumRetries || 0) / g;      // retries per module
+      const clamp = (n) => Math.round(Math.max(0, Math.min(100, n)));
+      const pron = clamp(avgAcc * 100);
+      const conf = clamp(avgPat);
+      const react = clamp(100 - avgRet * 28);       // fewer retries -> faster
+      const listen = clamp(avgAcc * 90 + 8);
+      const vocab = clamp((CITIZEN.completedModules / 50) * 100);  // city coverage
+      const fluency = clamp((pron + conf + react + listen + vocab) / 5);
+      const map = {
+        "radar.fluency": fluency, "radar.vocabulary": vocab, "radar.confidence": conf,
+        "radar.reaction": react, "radar.listening": listen, "radar.pronunciation": pron,
+      };
+      CITIZEN.fluency = CITIZEN.fluency.map((f) => ({ key: f.key, value: map[f.key] != null ? map[f.key] : f.value }));
+    }
+
+    // ----- Viral loop UI: streak flame, visa tier, invite code -----
+    if (detail.streak && detail.streak.count) {
+      const chip = el("streak-chip");
+      if (chip) { chip.hidden = false; el("streak-count").textContent = detail.streak.count; chip.title = detail.streak.count + " " + I18n.t("streak.title"); }
+    }
+    if (detail.visa) {
+      const vb = el("visa-badge");
+      if (vb) { vb.hidden = false; vb.setAttribute("data-i18n", "visa." + detail.visa); vb.textContent = I18n.t("visa." + detail.visa); vb.className = "visa-badge visa-" + detail.visa; }
+    }
+    const code = (detail.profile && detail.profile.inviteCode) || (detail.user ? detail.user.uid.slice(0, 6).toUpperCase() : null);
+    if (code) {
+      const row = el("invite-row");
+      if (row) {
+        row.hidden = false;
+        el("invite-code-val").textContent = code;
+        if (detail.referrals) el("invite-refs").textContent = "· " + detail.referrals + (detail.referrals === 1 ? " convite" : " convites");
+        const shareBtn = el("invite-share");
+        if (shareBtn) shareBtn.onclick = () => {
+          const text = "Sobreviva a Londres comigo no LinguoBound! Código: " + code;
+          const url = window.location.origin + window.location.pathname.replace(/dashboard\.html$/, "index.html");
+          if (navigator.share) navigator.share({ title: "LinguoBound", text: text, url: url }).catch(() => {});
+          else { navigator.clipboard && navigator.clipboard.writeText(text + " " + url); }
+        };
+      }
+    }
     renderAll();
   }
 

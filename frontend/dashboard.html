@@ -21,6 +21,9 @@
       <button class="nav-item" data-i18n="nav.certifications">Certifications</button>
     </nav>
     <div class="topbar-right">
+      <div class="streak-chip" id="streak-chip" title="day streak" hidden>
+        <span class="flame">&#128293;</span><span id="streak-count">0</span>
+      </div>
       <div class="lang-toggle" role="group" aria-label="Language / Idioma">
         <button type="button" data-set-lang="pt-BR">PT</button>
         <button type="button" data-set-lang="en">EN</button>
@@ -45,6 +48,7 @@
         <div>
           <p class="eyebrow" data-i18n="dash.activeCitizenship">Active Citizenship</p>
           <h1 class="display city-name" id="city-name">Londres</h1>
+          <span class="visa-badge" id="visa-badge" hidden></span>
         </div>
         <div class="weather-pill" id="weather-pill">
           <span class="weather-icon" id="weather-icon">◐</span>
@@ -59,6 +63,13 @@
         <div class="rail"><div class="rail-fill" id="rail-fill"></div></div>
       </div>
       <button class="btn btn-gold" id="resume-btn" style="margin-top:24px" data-i18n="dash.resume">Resume Simulation</button>
+
+      <div class="invite-row" id="invite-row" hidden>
+        <span class="eyebrow" data-i18n="dash.invite">Your invite code</span>
+        <code id="invite-code-val">—</code>
+        <span class="invite-refs" id="invite-refs"></span>
+        <button class="btn btn-ghost" id="invite-share" style="padding:8px 12px;font-size:11px">&#8599;</button>
+      </div>
     </section>
 
     <!-- Radar — Performance Analytics -->

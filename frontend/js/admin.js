@@ -6,8 +6,8 @@
  *  - Firebase admin auth gate (UX layer; Firestore Rules enforce)
  * ============================================================ */
 
-import { auth, isAdmin, onAuthStateChanged, signOut, CONFIG_READY } from "./firebase-init.js";
-import { seedBlockZero } from "./seed-content.js";
+import { auth, db, isAdmin, onAuthStateChanged, signOut, doc, getDoc, collection, getDocs, CONFIG_READY } from "./firebase-init.js";
+import { seedAllContent } from "./seed-content.js";
 
 (function () {
   "use strict";
@@ -73,7 +73,7 @@ import { seedBlockZero } from "./seed-content.js";
     seedBtn.disabled = true;
     if (seedStatus) seedStatus.textContent = "Populando…";
     try {
-      const n = await seedBlockZero();
+      const n = await seedAllContent();
       if (seedStatus) seedStatus.textContent = "✓ " + n + " módulos publicados em content/";
     } catch (e) {
       if (seedStatus) seedStatus.textContent = "Falhou: " + ((e && e.code) || "erro");
@@ -109,6 +109,76 @@ import { seedBlockZero } from "./seed-content.js";
       const initials = name.slice(0, 2).toUpperCase();
       if (chip) chip.textContent = initials;
       if (avatar) avatar.textContent = initials;
+    }
+    computeMetrics();   // wire real numbers + predictive health
+  }
+
+  /* ---------- Real metrics (live, computed client-side) ---------- */
+  const kpi = (label, value, trend) =>
+    '<div class="card glass kpi"><span class="kpi-label">' + label + '</span><span class="kpi-value">' + value + '</span>' +
+    (trend ? '<span class="kpi-trend">' + trend + '</span>' : '') + '</div>';
+
+  async function computeMetrics() {
+    if (!CONFIG_READY) return;  // keep illustrative placeholders in preview
+    try {
+      const usersSnap = await getDocs(collection(db, "users"));
+      let total = 0, free = 0, pro = 0;
+      let accSum = 0, accN = 0, patSum = 0, retSum = 0, velSum = 0, velN = 0, risk = 0;
+      const today = new Date().toISOString().slice(0, 10);
+      const jobs = [];
+      usersSnap.forEach((u) => {
+        total++;
+        const d = u.data() || {};
+        if (d.plan === "pro") pro++; else free++;
+        jobs.push(getDoc(doc(db, "progress", u.id)).then((ps) => {
+          if (!ps.exists()) { risk++; return; }            // no progress started -> at risk
+          const p = ps.data(); const g = p.gradedCount || 0;
+          if (g > 0) {
+            const a = (p.sumAccuracy || 0) / g;
+            accSum += a; accN++;
+            patSum += (p.sumPatience || 0) / g;
+            retSum += (p.sumRetries || 0) / g;
+            if (typeof p.lastAccuracy === "number") { velSum += (p.lastAccuracy - a); velN++; }
+            if (a < 0.6) risk++;
+          }
+          const last = p.streak && p.streak.lastDay;
+          const daysSince = last ? Math.round((new Date(today) - new Date(last)) / 86400000) : 99;
+          if (daysSince >= 3 || p.assistTempo) risk++;
+        }).catch(() => {}));
+      });
+      await Promise.all(jobs);
+
+      const pct = (n) => Math.round(n * 100);
+      const avgAcc = accN ? accSum / accN : 0;
+      const avgPat = accN ? patSum / accN : 0;
+      const avgRet = accN ? retSum / accN : 0;
+      const conv = total ? pct(pro / total) : 0;
+      const churn = total ? pct(Math.min(1, risk / total)) : 0;
+      const velocity = velN ? velSum / velN : 0;        // recent - overall accuracy
+
+      const kpis = $("plans-kpis");
+      if (kpis) kpis.innerHTML =
+        kpi("Usuários totais", total) +
+        kpi("Free", free, total ? (100 - conv) + "%" : "") +
+        kpi("Pro", pro, conv + "%") +
+        kpi("Pronúncia média", pct(avgAcc) + "%") +
+        kpi("Compostura média", Math.round(avgPat)) +
+        kpi("Conversão Free→Pro", conv + "%");
+
+      const health = $("base-health");
+      if (health) {
+        const velArrow = velocity >= 0 ? "▲" : "▼";
+        const churnClass = churn >= 40 ? "down" : "up";
+        health.innerHTML =
+          '<div class="card glass kpi"><span class="kpi-label">Risco de Evasão (Churn)</span><span class="kpi-value ' + churnClass + '">' + churn + '%</span><span class="kpi-trend">' + risk + ' de ' + total + ' em risco</span></div>' +
+          '<div class="card glass kpi"><span class="kpi-label">Velocidade de Fluência</span><span class="kpi-value">' + velArrow + ' ' + (velocity >= 0 ? "+" : "") + pct(velocity) + '%</span><span class="kpi-trend">precisão recente vs. média</span></div>' +
+          '<div class="card glass kpi"><span class="kpi-label">Zona de Atrito (retentativas/módulo)</span><span class="kpi-value">' + (Math.round(avgRet * 10) / 10) + '</span></div>';
+      }
+      const src = $("health-source");
+      if (src) src.textContent = "(ao vivo · " + total + " usuários)";
+    } catch (e) {
+      const src = $("health-source");
+      if (src) src.textContent = "(sem permissão / sem dados)";
     }
   }
 

@@ -26,6 +26,29 @@
 
 .topbar-right { display: flex; align-items: center; gap: 16px; }
 .citizen-chip { display: flex; align-items: center; gap: 12px; }
+
+/* Streak flame + Visa tier + invite row (viral loop) */
+.streak-chip {
+  display: inline-flex; align-items: center; gap: 6px;
+  background: var(--slate-900); border: 1px solid var(--gold-matte);
+  border-radius: 999px; padding: 6px 12px; font-variant-numeric: tabular-nums;
+  color: var(--gold-soft); font-size: 13px; font-weight: 600;
+}
+.streak-chip .flame { filter: saturate(1.2); }
+.visa-badge {
+  display: inline-block; margin-top: 10px;
+  font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase;
+  padding: 5px 11px; border-radius: 999px; border: 1px solid var(--glass-stroke); color: var(--ink-300);
+}
+.visa-badge.visa-resident { color: var(--silver-soft); border-color: var(--silver-matte); }
+.visa-badge.visa-citizen  { color: var(--gold-soft); border-color: var(--gold-matte); }
+.visa-badge.visa-diplomat { color: #1a1407; background: linear-gradient(180deg, var(--gold-soft), var(--gold-matte)); border-color: transparent; font-weight: 600; }
+.invite-row {
+  display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+  margin-top: 18px; padding-top: 16px; border-top: 1px solid var(--glass-stroke);
+}
+.invite-row code { color: var(--gold-soft); letter-spacing: 0.18em; font-size: 15px; }
+.invite-refs { color: var(--ink-500); font-size: 12px; }
 .citizen-avatar {
   width: 40px; height: 40px; border-radius: 50%;
   display: grid; place-items: center;

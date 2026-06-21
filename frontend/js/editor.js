@@ -7,7 +7,7 @@
  * ============================================================ */
 
 import { auth, db, isAdmin, onAuthStateChanged, doc, getDoc, setDoc, CONFIG_READY } from "./firebase-init.js";
-import { BLOCK0_BY_SEQUENCE } from "./content-block0.js";
+import { CONTENT_BY_SEQUENCE } from "./content-registry.js";
 
 (function () {
   "use strict";
@@ -194,7 +194,7 @@ import { BLOCK0_BY_SEQUENCE } from "./content-block0.js";
     if (CONFIG_READY) {
       try { const s = await getDoc(doc(db, "content", String(seq))); if (s.exists()) data = s.data(); } catch (e) {}
     }
-    if (!data && BLOCK0_BY_SEQUENCE[seq]) data = JSON.parse(JSON.stringify(BLOCK0_BY_SEQUENCE[seq]));
+    if (!data && CONTENT_BY_SEQUENCE[seq]) data = JSON.parse(JSON.stringify(CONTENT_BY_SEQUENCE[seq]));
     if (!data) { populate(blankModule(seq)); status("Módulo " + seq + " não existe — criando do zero."); }
     else { populate(data); status("Módulo " + seq + " carregado" + (CONFIG_READY ? "." : " (fonte: pacote local).")); }
   }

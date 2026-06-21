@@ -34,6 +34,10 @@ import {
   serverTimestamp,
   writeBatch,
   increment,
+  collection,
+  getDocs,
+  query,
+  where,
 } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
 
 // Firebase web config (public identifiers — safe to commit; not secrets).
@@ -68,6 +72,10 @@ export {
   serverTimestamp,
   writeBatch,
   increment,
+  collection,
+  getDocs,
+  query,
+  where,
 };
 
 /**

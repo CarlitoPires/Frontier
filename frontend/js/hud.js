@@ -78,6 +78,7 @@
   let sceneTitleObj = null;      // localized {en, pt-BR} when content-driven
   let learnerLevel = "absolute_beginner";  // adapts difficulty (from profile.level)
   let sceneSelfie = false;                 // bonus modules with triggerSelfieShare
+  let sceneSelfieOverlay = null;           // optional per-module overlay copy
 
   /* ---------- State ---------- */
   const state = {
@@ -162,12 +163,14 @@
       body.classList.toggle("mood-pleased", env.mood === "pleased");
       state.baseNoise = typeof env.baseNoise === "number" ? env.baseNoise : 24;
       sceneSelfie = !!content.triggerSelfieShare;
+      sceneSelfieOverlay = content.selfieOverlay || null;
     } else {
       TURNS = DEFAULT_TURNS;
       sceneThreshold = 80;
       sceneTitleObj = null;
       state.baseNoise = 24;
       sceneSelfie = false;
+      sceneSelfieOverlay = null;
     }
     renderSceneTitle();
 
@@ -177,6 +180,7 @@
         phase: (content && content.phase) || 1,
         mood: (content && content.environment && content.environment.mood) || "neutral",
         baseNoise: state.baseNoise,
+        rain: !!(content && content.environment && content.environment.rain),
       });
     }
 
@@ -420,6 +424,7 @@
     clearInterval(decay);
 
     const avgAcc = state.accs.length ? state.accs.reduce((a, b) => a + b, 0) / state.accs.length : 0.7;
+    const totalRetries = state.struggleHits;
     const score = Math.round(Math.min(100, 38 + avgAcc * 46 + state.patience * 0.16));
     const passedFinal = passed && score >= sceneThreshold;   // scene threshold (>= rules' 80)
 
@@ -428,14 +433,18 @@
     body.classList.toggle("mood-pleased", passedFinal);
     el("consequence").classList.toggle("rejected", !passedFinal);
 
-    // Write the result through the Hard Gate. The score we send is aligned
-    // to the verdict so Firestore never records a PASS the HUD called a fail.
-    // 'assist' = the learner struggled -> next module loads at a slower tempo.
+    // Write the result through the Hard Gate, with real metrics for the radar.
     try {
       if (window.LBProgress && typeof window.LBProgress.submit === "function") {
         const writeScore = passedFinal ? Math.max(score, 80) : Math.min(score, 79);
         const assist = state.struggleHits >= 2;
-        const res = await window.LBProgress.submit(writeScore, { assist: assist });
+        const res = await window.LBProgress.submit(writeScore, {
+          assist: assist,
+          accuracy: avgAcc,
+          patienceEnd: state.patience,
+          retries: totalRetries,
+          mode: state.mode,
+        });
         if (res && res.error) console.warn("[LinguoBound] gate rejected write:", res.error);
       }
     } catch (e) { /* offline / rules — UI still shows the verdict */ }
@@ -478,15 +487,16 @@
   /* ---------- Viral loop: victory selfie (bonus modules) ---------- */
   const shareVictoryBtn = el("share-victory");
   if (shareVictoryBtn) shareVictoryBtn.addEventListener("click", () => {
+    const ov = sceneSelfieOverlay || {};
     if (window.LBSelfie) window.LBSelfie.open({
-      eyebrow: "London Tourist",
+      eyebrow: ov.eyebrow || "London Tourist",
       title: I18n.t("conseq.shareTitle"),
       captureLabel: I18n.t("conseq.capture"),
       shareLabel: I18n.t("conseq.share"),
       retakeLabel: I18n.t("conseq.retake"),
       closeLabel: I18n.t("conseq.close"),
-      tagline: "London Tourist — Survived Day 1",
-      shareText: "I survived my first day in London with LinguoBound! \uD83C\uDDEC\uD83C\uDDE7",
+      tagline: ov.tagline || "London Tourist — Survived Day 1",
+      shareText: ov.shareText || "I survived my first day in London with LinguoBound! \uD83C\uDDEC\uD83C\uDDE7",
     });
   });
 

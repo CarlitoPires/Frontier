@@ -42,7 +42,7 @@ service cloud.firestore {
 
     function moduleFieldsValid(d) {
       return d.keys().hasAll(['sequence', 'status', 'score'])
-        && d.keys().hasOnly(['sequence', 'status', 'score', 'attempts', 'updatedAt', 'passedAt', 'blockId', 'title'])
+        && d.keys().hasOnly(['sequence', 'status', 'score', 'attempts', 'updatedAt', 'passedAt', 'blockId', 'title', 'accuracy', 'patienceEnd', 'retries', 'mode'])
         && d.sequence is int && d.sequence >= 1 && d.sequence <= 500
         && d.score is int && d.score >= 0 && d.score <= 100
         && (d.status == 'ATTEMPTED' || d.status == 'PROFICIENCY_PASSED');
@@ -61,11 +61,11 @@ service cloud.firestore {
 
     // Per-user progression — the authoritative Hard Gate lives here.
     match /progress/{uid} {
-      // Display cache (non-authoritative): owner-managed summary.
+      // Display cache (non-authoritative): owner-managed summary + streak + aggregates.
       allow read: if isAdmin() || (isSignedIn() && request.auth.uid == uid);
       allow create, update: if isSignedIn() && request.auth.uid == uid
-        && request.resource.data.unlockedSequence is int
-        && request.resource.data.unlockedSequence >= 1;
+        && (!('unlockedSequence' in request.resource.data)
+            || (request.resource.data.unlockedSequence is int && request.resource.data.unlockedSequence >= 1));
       allow delete: if false;
 
       match /modules/{moduleId} {
@@ -97,6 +97,24 @@ service cloud.firestore {
     match /metrics/{doc} {
       allow read: if isAdmin();
       allow write: if false; // written by Cloud Functions / batch jobs
+    }
+
+    // Public code -> uid lookup so an invitee can resolve who invited them.
+    match /inviteCodes/{code} {
+      allow read: if isSignedIn();
+      allow create: if isSignedIn() && request.resource.data.uid == request.auth.uid;
+      allow update, delete: if false;
+    }
+
+    // Referrals (viral loop): the invitee records who invited them; the
+    // inviter can query their own referrals to count them.
+    match /referrals/{inviteeUid} {
+      allow read: if isAdmin()
+        || (isSignedIn() && (request.auth.uid == inviteeUid || resource.data.inviterUid == request.auth.uid));
+      allow create: if isSignedIn() && request.auth.uid == inviteeUid
+        && request.resource.data.inviterUid is string
+        && request.resource.data.inviterUid != request.auth.uid;   // no self-referral
+      allow update, delete: if false;
     }
 
     // Content tree (cities -> blocks -> modules) is public-readable.
