@@ -29,6 +29,7 @@
         <h1 class="display scene-title" data-i18n="scene.customs">Customs Control</h1>
       </div>
       <div class="scene-right">
+        <button class="sound-btn" id="sound-toggle" data-i18n-aria-label="audio.sound" aria-label="Sound" aria-pressed="true">&#128266;</button>
         <div class="lang-toggle" role="group" aria-label="Language / Idioma">
           <button type="button" data-set-lang="pt-BR">PT</button>
           <button type="button" data-set-lang="en">EN</button>
@@ -92,6 +93,13 @@
         </div>
       </div>
 
+      <!-- Replay the NPC line (auditory feedback loop) -->
+      <div class="replay-row">
+        <span class="replay-label" data-i18n="audio.replay">Replay</span>
+        <button type="button" class="ctl sm" id="replay-slow" data-i18n="audio.slow">Slow &amp; clear</button>
+        <button type="button" class="ctl sm" id="replay-natural" data-i18n="audio.natural">Natural</button>
+      </div>
+
       <!-- Controls -->
       <div class="controls">
         <button class="ctl" id="earpiece-btn" aria-pressed="false">
@@ -132,6 +140,7 @@
   </div>
 
   <script src="js/i18n.js"></script>
+  <script src="js/audio.js"></script>
   <script src="js/hud.js"></script>
   <script type="module" src="js/session.js"></script>
 </body>

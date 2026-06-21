@@ -160,6 +160,15 @@
     }
     renderSceneTitle();
 
+    // Hand the soundscape to the audio engine (phase → texture, mood/noise → pressure).
+    if (window.LBAudio) {
+      window.LBAudio.setScene({
+        phase: (content && content.phase) || 1,
+        mood: (content && content.environment && content.environment.mood) || "neutral",
+        baseNoise: state.baseNoise,
+      });
+    }
+
     // Reset the run for the (re)loaded scene, ADAPTED to the learner's level:
     //  - Absolute Beginner: forgiving patience, slow decay, earpiece auto-on, Basic script.
     //  - Intermediate: balanced.
@@ -188,12 +197,18 @@
     patienceFill.style.width = state.patience + "%";
     noiseFill.style.width = state.noise + "%";
     patienceFill.classList.toggle("low", state.patience < 35);
+    if (window.LBAudio) window.LBAudio.setIntensity(state.noise / 100);  // ambient swells with noise
     if (state.patience < 30) {
       npcMood.textContent = I18n.t("npc.moodLosing");
       body.classList.add("mood-hostile");
     } else if (state.patience > 70) {
       npcMood.textContent = I18n.t("npc.moodImpatient");
     }
+  }
+
+  // Speak the current NPC line aloud (Web Speech API, via LBAudio).
+  function speakCurrent(rate) {
+    if (window.LBAudio && inBounds()) window.LBAudio.speakLine(TURNS[state.turn].text, rate);
   }
 
   // Update the localized dialogue content WITHOUT the speaking shimmer
@@ -212,6 +227,7 @@
     npcLine.classList.remove("revealed");
     npcLine.classList.add("speaking");
     applyTurnContent();
+    speakCurrent();   // voice the NPC line aloud
     setTimeout(() => npcLine.classList.remove("speaking"), 1400);
     micHint.textContent = I18n.t("mic.hint");
   }
@@ -251,6 +267,18 @@
 
   /* ---------- Translate button (mirror of tapping the line) ---------- */
   el("translate-btn").addEventListener("click", () => npcLine.classList.add("revealed"));
+
+  /* ---------- Audio: replay at speed + sound toggle ---------- */
+  const replaySlow = el("replay-slow");
+  const replayNatural = el("replay-natural");
+  const soundToggle = el("sound-toggle");
+  if (replaySlow) replaySlow.addEventListener("click", () => window.LBAudio && window.LBAudio.replay(0.7));
+  if (replayNatural) replayNatural.addEventListener("click", () => window.LBAudio && window.LBAudio.replay(1.0));
+  if (soundToggle) soundToggle.addEventListener("click", () => {
+    const m = window.LBAudio ? window.LBAudio.toggleMute() : false;
+    soundToggle.textContent = m ? "\uD83D\uDD07" : "\uD83D\uDD0A";  // 🔇 / 🔊
+    soundToggle.setAttribute("aria-pressed", String(!m));
+  });
 
   /* ---------- Patience decay (the "impatient NPC" pressure) ---------- */
   const decay = setInterval(() => {
