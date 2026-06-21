@@ -415,6 +415,7 @@ export const BLOCK0_MODULES = [
     sequence: 25, blockId: 1, indexInBlock: 25, phase: 3, subBlock: "1.5", threshold: 75,
     kind: "bonus",
     triggerSelfieShare: true,
+    selfieOverlay: { eyebrow: "Day One Survivor", tagline: "Tourist — I Survived London's First Day", shareText: "I landed in London knowing nothing — hostile customs, an impatient cabbie, the lot — and I made it to a coffee by the Thames. Day one: survived. 🇬🇧☕ #LinguoBound" },
     sceneTitle: { en: "Bonus — Coffee by the River", "pt-BR": "Bônus — Café à Beira do Rio" },
     contextDescription: {
       en: "You made it. The chaos fades. Sunlight on the Thames, Big Ben behind you, a quiet café. Order a coffee and breathe — you survived London's first day.",
