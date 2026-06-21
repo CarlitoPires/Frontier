@@ -38,6 +38,7 @@ import {
   getDocs,
   query,
   where,
+  onSnapshot,
 } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
 
 // Firebase web config (public identifiers — safe to commit; not secrets).
@@ -76,6 +77,7 @@ export {
   getDocs,
   query,
   where,
+  onSnapshot,
 };
 
 /**

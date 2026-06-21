@@ -24,7 +24,7 @@
 
 import {
   auth, db, onAuthStateChanged,
-  doc, getDoc, setDoc, serverTimestamp, CONFIG_READY,
+  doc, getDoc, setDoc, serverTimestamp, onSnapshot, CONFIG_READY,
 } from "./firebase-init.js";
 import { PLANS, DEFAULT_PLAN_ID, PAYMENTS_CONFIG } from "./payments-config.js";
 
@@ -127,6 +127,8 @@ import { PLANS, DEFAULT_PLAN_ID, PAYMENTS_CONFIG } from "./payments-config.js";
     showState("redirecting");
 
     // 1) Record the intent (owner-writable; grants NO access by itself).
+    //    This MUST succeed when Firebase is live, because the webhook maps
+    //    the payment back to the user via this order (external_reference).
     if (CONFIG_READY) {
       try {
         await setDoc(doc(db, "orders", orderId), {
@@ -142,7 +144,13 @@ import { PLANS, DEFAULT_PLAN_ID, PAYMENTS_CONFIG } from "./payments-config.js";
           status: "initiated",                 // webhook flips to paid/failed
           createdAt: serverTimestamp(),
         });
-      } catch (e) { /* non-fatal: proceed to hosted checkout anyway */ }
+      } catch (e) {
+        // Without the order doc the webhook can't grant the tier — fail
+        // closed and keep the user informed rather than charging blindly.
+        console.warn("[checkout] order intent write failed:", e && e.code);
+        showState("failed");
+        return;
+      }
     }
 
     try { localStorage.setItem(PENDING_KEY, JSON.stringify({ planId: plan.id, orderId: orderId, method: selectedMethod })); } catch (e) {}
@@ -181,14 +189,15 @@ import { PLANS, DEFAULT_PLAN_ID, PAYMENTS_CONFIG } from "./payments-config.js";
   }
 
   async function pollTierUpgrade(maxMs) {
-    // The webhook sets users/{uid}.plan once Mercado Pago confirms payment.
+    // Fallback path if the realtime listener can't attach (rules/network):
+    // the webhook sets users/{uid}.plan once Mercado Pago confirms payment.
     const deadline = Date.now() + (maxMs || 25000);
     while (Date.now() < deadline) {
       try {
         const snap = await getDoc(doc(db, "users", currentUser.uid));
         if (snap.exists()) {
           const plan = snap.data().plan;
-          if (plan === "pro" || plan === "pro_global") return true;
+          if (plan === "pro" || plan === "pro_global") { unlockLocalTier(plan); return true; }
         }
       } catch (e) { /* keep trying */ }
       await new Promise((r) => setTimeout(r, 2500));
@@ -196,14 +205,59 @@ import { PLANS, DEFAULT_PLAN_ID, PAYMENTS_CONFIG } from "./payments-config.js";
     return false;
   }
 
+  /**
+   * Real-time tier watcher. Reacts the instant the server webhook flips
+   * users/{uid}.plan to a paid tier — no manual refresh. Resolves true on
+   * upgrade, false on timeout (-> pending state). Falls back to polling if
+   * the snapshot listener errors.
+   */
+  function listenForUpgrade(maxMs) {
+    return new Promise((resolve) => {
+      let settled = false;
+      let unsub = null;
+      const finish = (val) => {
+        if (settled) return; settled = true;
+        if (unsub) { try { unsub(); } catch (e) {} }
+        clearTimeout(timer);
+        resolve(val);
+      };
+      const timer = setTimeout(() => finish(false), maxMs || 30000);
+      try {
+        unsub = onSnapshot(
+          doc(db, "users", currentUser.uid),
+          (snap) => {
+            if (!snap.exists()) return;
+            const plan = snap.data().plan;
+            if (plan === "pro" || plan === "pro_global") { unlockLocalTier(plan); finish(true); }
+          },
+          () => { // listener error -> degrade to polling
+            pollTierUpgrade((maxMs || 30000)).then(finish);
+          }
+        );
+      } catch (e) {
+        pollTierUpgrade((maxMs || 30000)).then(finish);
+      }
+    });
+  }
+
+  /** Reflect the unlocked tier in the live local session immediately. */
+  function unlockLocalTier(plan) {
+    if (currentProfile) currentProfile.plan = plan;
+    try {
+      if (window.LB_SESSION && window.LB_SESSION.profile) window.LB_SESSION.profile.plan = plan;
+    } catch (e) {}
+    // Let the rest of the app (dashboard chrome, etc.) react instantly.
+    window.dispatchEvent(new CustomEvent("lb:upgraded", { detail: { plan: plan } }));
+  }
+
   async function handleReturn(ret) {
     openModal();
     if (ret.kind === "failed") { showState("failed"); cleanUrl(); return; }
 
-    // approved or pending: confirm the server-side tier grant.
+    // approved or pending: confirm the server-side tier grant in real time.
     showState("confirming");
-    if (!CONFIG_READY || !currentUser) { showState(ret.kind === "approved" ? "pending" : "pending"); cleanUrl(); return; }
-    const upgraded = await pollTierUpgrade(ret.kind === "approved" ? 30000 : 12000);
+    if (!CONFIG_READY || !currentUser) { showState("pending"); cleanUrl(); return; }
+    const upgraded = await listenForUpgrade(ret.kind === "approved" ? 35000 : 15000);
     showState(upgraded ? "success" : "pending");
     try { localStorage.removeItem(PENDING_KEY); } catch (e) {}
     cleanUrl();
