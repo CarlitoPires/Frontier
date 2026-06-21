@@ -148,12 +148,18 @@ import { PLANS, DEFAULT_PLAN_ID } from "./payments-config.js";
     els.forEach((e) => io.observe(e));
   }
 
-  /* ---------- smooth anchor scroll ---------- */
+  /* ---------- smooth anchor scroll + direct checkout triggers ---------- */
   function mountScrollers() {
     document.querySelectorAll("[data-scroll]").forEach((btn) => {
       btn.addEventListener("click", () => {
         const el = document.querySelector(btn.getAttribute("data-scroll"));
         if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
+      });
+    });
+    // Any element with data-checkout opens the checkout for that plan directly.
+    document.querySelectorAll("[data-checkout]").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        if (window.LBCheckout) window.LBCheckout.open(btn.getAttribute("data-checkout"));
       });
     });
     document.querySelectorAll('.lp-nav-links a[href^="#"]').forEach((a) => {

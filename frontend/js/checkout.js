@@ -261,6 +261,17 @@ import { PLANS, DEFAULT_PLAN_ID, PAYMENTS_CONFIG } from "./payments-config.js";
     showState(upgraded ? "success" : "pending");
     try { localStorage.removeItem(PENDING_KEY); } catch (e) {}
     cleanUrl();
+    // Seamless hand-off: Nightmare (landing) -> Control (Command Center).
+    if (upgraded) seamlessEnterCity();
+  }
+
+  /** Cinematic redirect into the app once Pro is unlocked. */
+  function seamlessEnterCity() {
+    setTimeout(() => {
+      document.body.style.transition = "opacity 600ms var(--ease-cine)";
+      document.body.style.opacity = "0";
+      setTimeout(() => { window.location.href = "dashboard.html"; }, 560);
+    }, 1900);   // let the "Welcome, Citizen" visa-stamp land first
   }
 
   function cleanUrl() {
