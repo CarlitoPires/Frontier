@@ -122,5 +122,35 @@ service cloud.firestore {
       allow read: if isSignedIn();
       allow write: if isAdmin();
     }
+
+    // ---------- Checkout orders (Mercado Pago) ----------
+    // A citizen records their OWN purchase INTENT here before being sent
+    // to Mercado Pago's hosted checkout. This grants NO access on its own.
+    //
+    // The buyer may create/read their order and may only ever set a
+    // client-side status of 'initiated' or 'abandoned'. The authoritative
+    // paid/failed status — and the actual plan upgrade on users/{uid} —
+    // is written ONLY by the trusted Mercado Pago webhook via the Admin
+    // SDK (which bypasses these rules). Clients can never self-promote:
+    // the users/{uid} rule pins 'plan' and 'subscription' to their prior
+    // value for non-admins.
+    match /orders/{orderId} {
+      allow read: if isAdmin()
+        || (isSignedIn() && resource.data.uid == request.auth.uid);
+      allow create: if isSignedIn()
+        && request.resource.data.uid == request.auth.uid
+        && request.resource.data.status == 'initiated'
+        && request.resource.data.tier in ['pro', 'pro_global']
+        && request.resource.data.amountCents is int
+        && request.resource.data.amountCents >= 0;
+      // Buyer may only mark their own pending order as abandoned; never paid.
+      allow update: if isSignedIn()
+        && resource.data.uid == request.auth.uid
+        && request.resource.data.uid == resource.data.uid
+        && request.resource.data.tier == resource.data.tier
+        && request.resource.data.amountCents == resource.data.amountCents
+        && request.resource.data.status == 'abandoned';
+      allow delete: if false;
+    }
   }
 }

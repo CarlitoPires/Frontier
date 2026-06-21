@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="pt-BR" data-i18n-doctitle="doc.landingTitle">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="LinguoBound — o simulador de sobrevivência que transforma um turista perdido em um morador confiante. 500 missões de choque de realidade." />
+  <title>LinguoBound · Conquiste a Cidade</title>
+  <link rel="stylesheet" href="css/obsidian.css" />
+  <link rel="stylesheet" href="css/pricing.css" />
+</head>
+<body class="lp-body">
+  <div class="atmosphere"></div>
+
+  <!-- ===== Top nav ===== -->
+  <header class="lp-nav">
+    <a class="lp-wordmark display" href="pricing.html">LinguoBound</a>
+    <nav class="lp-nav-links">
+      <a href="#how" data-i18n="lp.navHow">How it works</a>
+      <a href="#plans" data-i18n="lp.navPlans">Plans</a>
+      <a href="index.html" class="lp-nav-login" data-i18n="lp.navLogin">Citizen Login</a>
+    </nav>
+    <div class="lang-toggle" role="group" aria-label="Language / Idioma">
+      <button type="button" data-set-lang="pt-BR">PT</button>
+      <button type="button" data-set-lang="en">EN</button>
+    </div>
+  </header>
+
+  <main>
+    <!-- ===== Hero ===== -->
+    <section class="lp-hero">
+      <div class="lp-hero-inner">
+        <p class="eyebrow cine" data-i18n="lp.heroEyebrow">Real-Life Survival Simulator</p>
+        <h1 class="display lp-hero-title cine cine-delay-1" data-i18n-html="lp.heroTitle">
+          You land in a foreign city.<br>No one speaks your language.<br>The clock is <span class="metal">already running</span>.
+        </h1>
+        <p class="lp-hero-sub cine cine-delay-2" data-i18n="lp.heroSub">
+          LinguoBound is not an English course. It is a reality-shock survival engine.
+        </p>
+        <div class="lp-hero-cta cine cine-delay-3">
+          <button class="btn btn-gold lp-cta-lg" data-scroll="#plans" data-i18n="lp.heroCtaPrimary">Conquer my access</button>
+          <a class="btn lp-cta-lg" href="index.html" data-i18n="lp.heroCtaSecondary">I'm already a citizen</a>
+        </div>
+        <p class="lp-hero-trust eyebrow cine cine-delay-3" data-i18n="lp.heroTrust">7-day guarantee · PIX & Credit Card · Cancel anytime</p>
+
+        <!-- Trust element: scarcity countdown + live visa status -->
+        <div class="lp-scarcity glass cine cine-delay-3">
+          <div class="lp-scarcity-text">
+            <span class="lp-pulse" aria-hidden="true"></span>
+            <span class="eyebrow" data-i18n="lp.scarcity">Founding Citizen pricing — first cohort closes in</span>
+          </div>
+          <div class="lp-countdown" id="lp-countdown" aria-live="polite">
+            <span class="cd-cell"><b id="cd-d">00</b><i>d</i></span>
+            <span class="cd-cell"><b id="cd-h">00</b><i>h</i></span>
+            <span class="cd-cell"><b id="cd-m">00</b><i>m</i></span>
+            <span class="cd-cell"><b id="cd-s">00</b><i>s</i></span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== The Reality Shock (nightmare) ===== -->
+    <section class="lp-section" id="nightmare">
+      <div class="lp-head reveal">
+        <p class="eyebrow" data-i18n="lp.nightmareEyebrow">The Reality Shock</p>
+        <h2 class="display lp-h2" data-i18n="lp.nightmareTitle">The nightmare every immigrant knows</h2>
+      </div>
+      <div class="lp-grid lp-grid-4">
+        <article class="lp-card glass reveal">
+          <span class="lp-card-num">01</span>
+          <h3 data-i18n="lp.nm1Title">The hostile officer</h3>
+          <p data-i18n="lp.nm1Body">Customs. A cold stare. A question you don't understand.</p>
+        </article>
+        <article class="lp-card glass reveal">
+          <span class="lp-card-num">02</span>
+          <h3 data-i18n="lp.nm2Title">The impatient driver</h3>
+          <p data-i18n="lp.nm2Body">The meter is running and ‘sorry?’ only works twice.</p>
+        </article>
+        <article class="lp-card glass reveal">
+          <span class="lp-card-num">03</span>
+          <h3 data-i18n="lp.nm3Title">The frozen interview</h3>
+          <p data-i18n="lp.nm3Body">The job is yours to lose. Your mind goes blank.</p>
+        </article>
+        <article class="lp-card glass reveal">
+          <span class="lp-card-num">04</span>
+          <h3 data-i18n="lp.nm4Title">The 3am emergency</h3>
+          <p data-i18n="lp.nm4Body">A hospital. A form. A word you've never heard.</p>
+        </article>
+      </div>
+    </section>
+
+    <!-- ===== Transformation ===== -->
+    <section class="lp-section lp-transform" id="transform">
+      <div class="lp-head reveal">
+        <p class="eyebrow" data-i18n="lp.transformEyebrow">The Transformation</p>
+        <h2 class="display lp-h2" data-i18n="lp.transformTitle">From lost tourist to local — by force of reality</h2>
+        <p class="lp-lead" data-i18n="lp.transformBody">You don't memorise lists. You survive scenarios under pressure.</p>
+      </div>
+      <div class="lp-stages reveal">
+        <div class="lp-stage"><span class="lp-stage-dot"></span><b data-i18n="lp.stageTourist">Tourist</b></div>
+        <div class="lp-stage-line"></div>
+        <div class="lp-stage"><span class="lp-stage-dot"></span><b data-i18n="lp.stageResident">Resident</b></div>
+        <div class="lp-stage-line"></div>
+        <div class="lp-stage"><span class="lp-stage-dot"></span><b data-i18n="lp.stageLocal">Local</b></div>
+        <div class="lp-stage-line"></div>
+        <div class="lp-stage lp-stage-gold"><span class="lp-stage-dot"></span><b data-i18n="lp.stageMaster">Master of the City</b></div>
+      </div>
+    </section>
+
+    <!-- ===== How it works ===== -->
+    <section class="lp-section" id="how">
+      <div class="lp-head reveal">
+        <p class="eyebrow" data-i18n="lp.howEyebrow">The Engine</p>
+        <h2 class="display lp-h2" data-i18n="lp.howTitle">How the reality-shock works</h2>
+      </div>
+      <div class="lp-grid lp-grid-3">
+        <article class="lp-card glass reveal">
+          <div class="lp-ico" aria-hidden="true">◆</div>
+          <h3 data-i18n="lp.how1Title">Action → Obstacle → Consequence</h3>
+          <p data-i18n="lp.how1Body">Every module is a real-world mission with a social obstacle.</p>
+        </article>
+        <article class="lp-card glass reveal">
+          <div class="lp-ico" aria-hidden="true">⛒</div>
+          <h3 data-i18n="lp.how2Title">The Hard Gate</h3>
+          <p data-i18n="lp.how2Body">Module N+1 stays locked until the AI certifies Module N.</p>
+        </article>
+        <article class="lp-card glass reveal">
+          <div class="lp-ico" aria-hidden="true">◑</div>
+          <h3 data-i18n="lp.how3Title">Living AI characters</h3>
+          <p data-i18n="lp.how3Body">Impatient, regional, reactive — they judge your attitude.</p>
+        </article>
+      </div>
+    </section>
+
+    <!-- ===== Value stack ===== -->
+    <section class="lp-section" id="value">
+      <div class="lp-head reveal">
+        <p class="eyebrow" data-i18n="lp.valueEyebrow">What you're really buying</p>
+        <h2 class="display lp-h2" data-i18n="lp.valueTitle">Not lessons. Survival confidence.</h2>
+      </div>
+      <div class="lp-grid lp-grid-3">
+        <article class="lp-card glass reveal"><h3 data-i18n="lp.v1Title">500 modules</h3><p data-i18n="lp.v1Body"></p></article>
+        <article class="lp-card glass reveal"><h3 data-i18n="lp.v2Title">Visa System</h3><p data-i18n="lp.v2Body"></p></article>
+        <article class="lp-card glass reveal"><h3 data-i18n="lp.v3Title">Victory Selfies</h3><p data-i18n="lp.v3Body"></p></article>
+        <article class="lp-card glass reveal"><h3 data-i18n="lp.v4Title">AI Metrics</h3><p data-i18n="lp.v4Body"></p></article>
+        <article class="lp-card glass reveal"><h3 data-i18n="lp.v5Title">Procedural audio</h3><p data-i18n="lp.v5Body"></p></article>
+        <article class="lp-card glass reveal"><h3 data-i18n="lp.v6Title">Bilingual support</h3><p data-i18n="lp.v6Body"></p></article>
+      </div>
+    </section>
+
+    <!-- ===== Pricing ===== -->
+    <section class="lp-section lp-pricing" id="plans">
+      <div class="lp-head reveal">
+        <p class="eyebrow" data-i18n="lp.pricingEyebrow">Citizenship Hierarchy</p>
+        <h2 class="display lp-h2" data-i18n="lp.pricingTitle">Choose your visa</h2>
+        <p class="lp-lead" data-i18n="lp.pricingSub">You don't buy cities. You conquer the right to live in them.</p>
+      </div>
+
+      <div class="lp-plan-grid reveal" id="plan-grid">
+        <!-- plan cards injected by pricing.js -->
+      </div>
+
+      <p class="lp-value-framing reveal" data-i18n="lp.valueFraming">Less than one private lesson — for an entire city.</p>
+
+      <!-- Guarantee (trust element + CDC compliance) -->
+      <div class="lp-guarantee glass reveal">
+        <div class="lp-guarantee-seal" aria-hidden="true">
+          <span class="stamp-top">7</span><span class="stamp-bottom">DIAS</span>
+        </div>
+        <div>
+          <h3 class="display" data-i18n="lp.guaranteeTitle">7-day unconditional guarantee</h3>
+          <p data-i18n="lp.guaranteeBody">Try it risk-free. Full refund within 7 days — Art. 49 CDC.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== Proof / stats ===== -->
+    <section class="lp-section lp-proof" id="proof">
+      <div class="lp-head reveal">
+        <p class="eyebrow" data-i18n="lp.proofEyebrow">Why it works</p>
+        <h2 class="display lp-h2" data-i18n="lp.proofTitle">Built like nothing else</h2>
+      </div>
+      <div class="lp-stats reveal">
+        <div class="lp-stat"><b class="metal" data-i18n="lp.stat1">500</b><span data-i18n="lp.stat1Label">modules</span></div>
+        <div class="lp-stat"><b class="metal" data-i18n="lp.stat2">20</b><span data-i18n="lp.stat2Label">blocks</span></div>
+        <div class="lp-stat"><b class="metal" data-i18n="lp.stat3">125h</b><span data-i18n="lp.stat3Label">gameplay</span></div>
+        <div class="lp-stat"><b class="metal" data-i18n="lp.stat4">AI</b><span data-i18n="lp.stat4Label">gating</span></div>
+      </div>
+      <blockquote class="lp-founder glass reveal" data-i18n="lp.founderNote">“We didn't build a language app…”</blockquote>
+    </section>
+
+    <!-- ===== FAQ ===== -->
+    <section class="lp-section lp-faq" id="faq">
+      <div class="lp-head reveal">
+        <h2 class="display lp-h2" data-i18n="lp.faqTitle">Questions before you board</h2>
+      </div>
+      <div class="lp-faq-list reveal">
+        <details class="lp-faq-item"><summary data-i18n="lp.faqQ1">Subscription?</summary><p data-i18n="lp.faqA1"></p></details>
+        <details class="lp-faq-item"><summary data-i18n="lp.faqQ2">Refund?</summary><p data-i18n="lp.faqA2"></p></details>
+        <details class="lp-faq-item"><summary data-i18n="lp.faqQ3">Beginner?</summary><p data-i18n="lp.faqA3"></p></details>
+        <details class="lp-faq-item"><summary data-i18n="lp.faqQ4">Payment methods?</summary><p data-i18n="lp.faqA4"></p></details>
+        <details class="lp-faq-item"><summary data-i18n="lp.faqQ5">LGPD?</summary><p data-i18n="lp.faqA5"></p></details>
+      </div>
+    </section>
+
+    <!-- ===== Final CTA ===== -->
+    <section class="lp-section lp-final reveal">
+      <h2 class="display lp-h2" data-i18n="lp.pricingTitle">Choose your visa</h2>
+      <button class="btn btn-gold lp-cta-lg" data-scroll="#plans" data-i18n="lp.heroCtaPrimary">Conquer my access</button>
+    </section>
+  </main>
+
+  <!-- ===== Compliance footer ===== -->
+  <footer class="lp-foot">
+    <p class="lp-foot-tag display" data-i18n="lp.footTagline">Conquer the city.</p>
+    <nav class="lp-foot-links">
+      <a href="#" data-i18n="lp.footPrivacy">Privacy Policy</a>
+      <a href="#" data-i18n="lp.footTerms">Terms of Use</a>
+      <a href="#" data-i18n="lp.footRefund">Refund Policy</a>
+      <a href="mailto:suporte@linguobound.com" data-i18n="lp.footContact">Contact</a>
+    </nav>
+    <p class="lp-foot-fine" data-i18n="lp.footTransparency">Prices in BRL, taxes included. Subscriptions renew automatically.</p>
+    <p class="lp-foot-fine" data-i18n="lp.footLgpd">We process personal data under the LGPD.</p>
+    <p class="lp-foot-fine lp-foot-company" data-i18n="lp.footCompany">LinguoBound · CNPJ 00.000.000/0001-00</p>
+  </footer>
+
+  <!-- ===== Checkout modal ===== -->
+  <div class="co-overlay" id="co-overlay" aria-hidden="true" role="dialog" aria-modal="true" aria-labelledby="co-title">
+    <div class="co-modal glass">
+      <button class="co-close" id="co-close" aria-label="Close" data-i18n-aria-label="pay.close">✕</button>
+
+      <!-- STATE: form -->
+      <div class="co-state" id="co-form" data-state="form">
+        <p class="eyebrow" data-i18n="pay.title">Secure Checkout</p>
+
+        <div class="co-summary">
+          <p class="eyebrow" data-i18n="pay.orderSummary">Order summary</p>
+          <div class="co-summary-row"><span data-i18n="pay.plan">Plan</span><b id="co-plan-name">—</b></div>
+          <div class="co-summary-row"><span data-i18n="pay.billing">Billing</span><b id="co-plan-billing">—</b></div>
+          <div class="co-summary-row co-total"><span data-i18n="pay.total">Total today</span><b id="co-plan-price">—</b></div>
+        </div>
+
+        <p class="eyebrow co-label" data-i18n="pay.method">Payment method</p>
+        <div class="co-methods" role="group">
+          <button type="button" class="co-method active" data-method="pix">
+            <span class="co-method-name" data-i18n="pay.pix">PIX</span>
+            <span class="co-method-hint" data-i18n="pay.pixHint">Instant</span>
+          </button>
+          <button type="button" class="co-method" data-method="card">
+            <span class="co-method-name" data-i18n="pay.card">Credit card</span>
+            <span class="co-method-hint" data-i18n="pay.cardHint">Up to 12×</span>
+          </button>
+        </div>
+
+        <div class="co-identify">
+          <p class="eyebrow co-label" data-i18n="pay.identify">Identify yourself</p>
+          <p class="co-identify-hint" id="co-identify-hint" data-i18n="pay.identifyHint">We link your purchase to your account.</p>
+          <div class="co-account" id="co-account" hidden>
+            <span class="co-account-dot"></span><span id="co-account-email">—</span>
+          </div>
+          <a class="btn co-login-btn" id="co-login-btn" href="index.html" data-i18n="pay.loginToContinue">Log in to continue</a>
+        </div>
+
+        <p class="co-recurring" id="co-recurring" data-i18n="pay.recurring">Recurring billing notice.</p>
+        <button class="btn btn-gold co-pay" id="co-pay" disabled data-i18n="pay.payNow">Pay securely</button>
+        <p class="co-secured eyebrow"><span class="co-lock" aria-hidden="true">🔒</span> <span data-i18n="pay.securedBy">Secured by Mercado Pago</span></p>
+      </div>
+
+      <!-- STATE: redirecting -->
+      <div class="co-state" id="co-redirecting" data-state="redirecting" hidden>
+        <div class="co-spinner" aria-hidden="true"></div>
+        <h3 class="display" data-i18n="pay.redirecting">Opening secure payment…</h3>
+      </div>
+
+      <!-- STATE: confirming -->
+      <div class="co-state" id="co-confirming" data-state="confirming" hidden>
+        <div class="co-spinner" aria-hidden="true"></div>
+        <h3 class="display" data-i18n="pay.confirming">Confirming your payment…</h3>
+        <p data-i18n="pay.confirmingHint">This can take a few seconds.</p>
+      </div>
+
+      <!-- STATE: success -->
+      <div class="co-state co-center" id="co-success" data-state="success" hidden>
+        <div class="co-seal" aria-hidden="true"><span class="stamp-top">VISA</span><span class="stamp-bottom">ATIVO</span></div>
+        <h3 class="display" data-i18n="pay.success">Welcome, Citizen.</h3>
+        <p data-i18n="pay.successBody">Your access is active.</p>
+        <a class="btn btn-gold" href="dashboard.html" data-i18n="pay.goDash">Enter the City</a>
+      </div>
+
+      <!-- STATE: pending -->
+      <div class="co-state co-center" id="co-pending" data-state="pending" hidden>
+        <div class="co-spinner" aria-hidden="true"></div>
+        <h3 class="display" data-i18n="pay.pending">Payment received — activating</h3>
+        <p data-i18n="pay.pendingBody">Your tier unlocks automatically once it clears.</p>
+        <a class="btn" href="dashboard.html" data-i18n="pay.goDash">Enter the City</a>
+      </div>
+
+      <!-- STATE: failed -->
+      <div class="co-state co-center" id="co-failed" data-state="failed" hidden>
+        <div class="co-seal co-seal-fail" aria-hidden="true"><span class="stamp-top">VISA</span><span class="stamp-bottom">NEGADO</span></div>
+        <h3 class="display" data-i18n="pay.failed">Payment not completed</h3>
+        <p data-i18n="pay.failedBody">No charge was made.</p>
+        <button class="btn btn-gold" id="co-retry" data-i18n="pay.retry">Try again</button>
+      </div>
+
+      <!-- STATE: need login -->
+      <div class="co-state co-center" id="co-needlogin" data-state="needlogin" hidden>
+        <div class="co-seal" aria-hidden="true"><span class="stamp-top">VISA</span><span class="stamp-bottom">· ? ·</span></div>
+        <h3 class="display" data-i18n="pay.needLoginTitle">One step first</h3>
+        <p data-i18n="pay.needLoginBody">Create your free citizen account, then complete checkout.</p>
+        <a class="btn btn-gold" href="index.html" data-i18n="pay.createAccount">Create my account</a>
+      </div>
+    </div>
+  </div>
+
+  <script src="js/i18n.js"></script>
+  <script type="module" src="js/checkout.js"></script>
+  <script type="module" src="js/pricing.js"></script>
+</body>
+</html>
