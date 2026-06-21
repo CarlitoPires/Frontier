@@ -1,5 +1,5 @@
 /* ============================================================
- *  FRONTIER — Authentication flow (Firebase Email/Password)
+ *  LinguoBound — Authentication flow (Firebase Email/Password)
  *
  *  - Login + Sign-up (mode toggle on the same card).
  *  - On sign-up, creates the users/{uid} profile (role:user, plan:free)
@@ -18,7 +18,10 @@ import {
   isAdmin,
   signInWithEmailAndPassword,
   createUserWithEmailAndPassword,
+  GoogleAuthProvider,
+  signInWithPopup,
   doc,
+  getDoc,
   setDoc,
   serverTimestamp,
 } from "./firebase-init.js";
@@ -154,6 +157,37 @@ import {
     mode = mode === "login" ? "signup" : "login";
     clearError();
     renderMode();
+  });
+
+  /* ---------- Sign in with Google ---------- */
+  const googleBtn = $("google-btn");
+  googleBtn && googleBtn.addEventListener("click", async () => {
+    if (busy) return;
+    clearError();
+    try {
+      const provider = new GoogleAuthProvider();
+      const cred = await signInWithPopup(auth, provider);
+      // First-time Google users get a profile (satisfies firestore.rules).
+      const ref = doc(db, "users", cred.user.uid);
+      const snap = await getDoc(ref);
+      if (!snap.exists()) {
+        await setDoc(ref, {
+          email: cred.user.email,
+          displayName: cred.user.displayName || (cred.user.email || "").split("@")[0],
+          role: "user",
+          plan: "free",
+          nativeLang: I18n.getLang(),
+          subscription: { provider: "mercadopago", status: "none", externalId: null, currentPeriodEnd: null },
+          createdAt: serverTimestamp(),
+        });
+      }
+      await routeAfterAuth(cred.user);
+    } catch (err) {
+      const code = err && err.code;
+      // User simply dismissed the popup — not an error worth surfacing.
+      if (code === "auth/popup-closed-by-user" || code === "auth/cancelled-popup-request") return;
+      showError(mapAuthError(code));
+    }
   });
 
   /* ---------- FaceID (cinematic; requires an existing session) ---------- */

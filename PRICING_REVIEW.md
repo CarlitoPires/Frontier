@@ -1,4 +1,4 @@
-# FRONTIER — Strategic SaaS Pricing Review
+# LinguoBound — Strategic SaaS Pricing Review
 
 *Senior SaaS architect / business-strategist perspective. This is product
 strategy guidance, not professional financial advice — validate with live
@@ -45,7 +45,7 @@ won't see the value mid-funnel. Two options:
   then reveal the "per month" equivalent) — standard SaaS anchoring.
 
 ### 3. Charge annually — it fits the product better than monthly
-FRONTIER is a **125-hours-per-city, months-long commitment**. Monthly billing
+LinguoBound is a **125-hours-per-city, months-long commitment**. Monthly billing
 fights your own model: a user grinds the gate, churns for two months, comes
 back. Lead with annual (e.g. *R$ 399/yr ≈ R$ 33/mo equivalent*) framed as
 "a year of citizenship." This improves LTV, smooths cash flow, and matches the

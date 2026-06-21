@@ -1,4 +1,4 @@
-/* FRONTIER — Dashboard logic
+/* LinguoBound — Dashboard logic
    - Renders fluency radar
    - Builds citizenship hierarchy (hard-gate states)
    - Real-Time Environment Sync (weather -> atmosphere + rain SFX/visual)
@@ -75,6 +75,17 @@
     el("tier-label").textContent = I18n.t(CITIZEN.tier === "GLOBAL" ? "tier.global" : "tier.base");
   }
 
+  function renderIdentity() {
+    const nameEl = el("citizen-name");
+    const avatarEl = el("citizen-avatar");
+    if (nameEl) nameEl.textContent = CITIZEN.name;
+    if (avatarEl) {
+      const parts = CITIZEN.name.trim().split(/\s+/);
+      const initials = (parts[0]?.[0] || "") + (parts[1]?.[0] || parts[0]?.[1] || "");
+      avatarEl.textContent = initials.toUpperCase();
+    }
+  }
+
   function renderHierarchy() {
     gateEl.innerHTML = CITIZEN.hierarchy
       .map(
@@ -94,6 +105,7 @@
   }
 
   function renderAll() {
+    renderIdentity();
     renderRadar();
     renderProgressAndTier();
     renderHierarchy();
@@ -149,6 +161,25 @@
 
   // Re-render localized content (not the rain) when the language changes.
   window.addEventListener("i18n:change", renderAll);
+
+  // Merge REAL Firestore user data (from session.js) into the view model.
+  // Progression aggregates (fluency/hierarchy) will arrive once the backend
+  // writes them; until then those stay as illustrative defaults.
+  window.addEventListener("lb:session", (e) => {
+    const profile = e.detail && e.detail.profile;
+    if (!profile) return;
+    CITIZEN.name = profile.displayName || (profile.email ? profile.email.split("@")[0] : CITIZEN.name);
+    CITIZEN.tier = profile.plan === "pro" ? "GLOBAL" : "BASE";
+    renderAll();
+  });
+
+  // If the session resolved before this script attached its listener, apply now.
+  if (window.LB_SESSION && window.LB_SESSION.profile) {
+    const p = window.LB_SESSION.profile;
+    CITIZEN.name = p.displayName || (p.email ? p.email.split("@")[0] : CITIZEN.name);
+    CITIZEN.tier = p.plan === "pro" ? "GLOBAL" : "BASE";
+    renderAll();
+  }
 
   /* ---------- Resume ---------- */
   el("resume-btn").addEventListener("click", () => {

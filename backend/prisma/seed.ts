@@ -1,5 +1,5 @@
 /* ============================================================
- *  FRONTIER — Seed generator
+ *  LinguoBound — Seed generator
  *  Programmatically builds the 20 Blocks × 25 Modules = 500
  *  matrix per city. Module *content* (Action/Obstacle/Consequence
  *  text) is authored/generated in the content pipeline — here we

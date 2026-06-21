@@ -1,6 +1,6 @@
 rules_version = '2';
 
-// FRONTIER — Firestore Security Rules
+// LinguoBound — Firestore Security Rules
 // Real enforcement layer (client-side checks are UX only).
 service cloud.firestore {
   match /databases/{database}/documents {

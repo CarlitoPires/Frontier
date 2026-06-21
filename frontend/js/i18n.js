@@ -1,5 +1,5 @@
 /* ============================================================
- *  FRONTIER — i18n engine (scalable localization)
+ *  LinguoBound — i18n engine (scalable localization)
  *
  *  - Flat dictionary keyed by dotted strings, per language.
  *  - t(key, params) with {placeholder} substitution + EN fallback.
@@ -22,16 +22,18 @@
 (function (global) {
   "use strict";
 
-  var STORAGE_KEY = "frontier.lang";
+  var STORAGE_KEY = "linguobound.lang";
   var DEFAULT_LANG = "pt-BR";              // Brazil-first product
   var SUPPORTED = ["en", "pt-BR"];
 
   var DICT = {
     en: {
       /* document titles */
-      "doc.dashTitle": "FRONTIER · Dashboard",
-      "doc.simTitle": "FRONTIER · Customs Control",
-      "doc.authTitle": "FRONTIER · Access",
+      "doc.dashTitle": "LinguoBound · Dashboard",
+      "doc.simTitle": "LinguoBound · Customs Control",
+      "doc.authTitle": "LinguoBound · Access",
+      "common.signout": "Sign out",
+      "session.checking": "Verifying session…",
 
       /* landing / authentication */
       "auth.eyebrow": "Real-Life Social Simulator",
@@ -47,6 +49,7 @@
       "auth.createAccount": "Create account",
       "auth.or": "or",
       "auth.faceId": "Authenticate with FaceID",
+      "auth.google": "Sign in with Google",
       "auth.noCitizenship": "No citizenship yet?",
       "auth.requestVisa": "Request entry visa",
       "auth.haveCitizenship": "Already a citizen?",
@@ -161,9 +164,11 @@
 
     "pt-BR": {
       /* document titles */
-      "doc.dashTitle": "FRONTIER · Painel",
-      "doc.simTitle": "FRONTIER · Controle Alfandegário",
-      "doc.authTitle": "FRONTIER · Acesso",
+      "doc.dashTitle": "LinguoBound · Painel",
+      "doc.simTitle": "LinguoBound · Controle Alfandegário",
+      "doc.authTitle": "LinguoBound · Acesso",
+      "common.signout": "Sair",
+      "session.checking": "Verificando sessão…",
 
       /* landing / authentication */
       "auth.eyebrow": "Simulador social da vida real",
@@ -179,6 +184,7 @@
       "auth.createAccount": "Criar conta",
       "auth.or": "ou",
       "auth.faceId": "Autenticar com FaceID",
+      "auth.google": "Entrar com Google",
       "auth.noCitizenship": "Ainda não tem cidadania?",
       "auth.requestVisa": "Solicite visto de entrada",
       "auth.haveCitizenship": "Já tem cidadania?",

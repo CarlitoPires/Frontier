@@ -1,5 +1,5 @@
 /* ============================================================
- *  FRONTIER — Admin Command Center logic
+ *  LinguoBound — Admin Command Center logic
  *  - Panel/tab navigation + breadcrumb
  *  - Collapsible "Métricas" sub-menu
  *  - Mobile off-canvas drawer
@@ -99,7 +99,7 @@ import { auth, isAdmin, onAuthStateChanged, signOut, CONFIG_READY } from "./fire
     // UI can be reviewed; real deployments will hit the auth gate below.
     if (gate) gate.hidden = true;
     console.warn(
-      "[FRONTIER] Firebase config not set — admin shown in PREVIEW mode (no auth). " +
+      "[LinguoBound] Firebase config not set — admin shown in PREVIEW mode (no auth). " +
       "Paste your keys into js/firebase-init.js to enable the secure gate."
     );
   } else {

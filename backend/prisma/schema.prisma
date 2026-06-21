@@ -1,5 +1,5 @@
 // ============================================================
-//  FRONTIER — Data Model
+//  LinguoBound — Data Model
 //  Cities → Blocks (20) → Modules (25 each = 500) → Progress
 //  Strictly linear "Hard Gate" progression enforced in service layer
 //  and backed by DB constraints below.

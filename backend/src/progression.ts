@@ -1,5 +1,5 @@
 /* ============================================================
- *  FRONTIER — Hard Gate Progression Service
+ *  LinguoBound — Hard Gate Progression Service
  *
  *  RULE (non-negotiable):
  *    Module (N+1) is LOCKED and unplayable until Module (N) has

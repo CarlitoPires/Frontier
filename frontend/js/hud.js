@@ -1,5 +1,5 @@
 /* ============================================================
- *  FRONTIER — In-Simulation NPC Dialogue HUD
+ *  LinguoBound — In-Simulation NPC Dialogue HUD
  *  Scene: Customs Control (London · Block 04 · Module 11)
  *
  *  Implements the PRD Survival Panel:

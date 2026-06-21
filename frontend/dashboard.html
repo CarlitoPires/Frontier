@@ -3,17 +3,18 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>FRONTIER · Painel</title>
+  <title>LinguoBound · Painel</title>
   <link rel="stylesheet" href="css/obsidian.css" />
   <link rel="stylesheet" href="css/dashboard.css" />
 </head>
 <body>
   <div class="atmosphere"></div>
+  <div class="lb-veil" id="lb-veil" data-i18n="session.checking">Verifying session…</div>
   <canvas id="rain-canvas" class="rain-canvas" aria-hidden="true"></canvas>
 
   <!-- Top bar -->
   <header class="topbar cine">
-    <div class="brand-mini display">FRONTIER</div>
+    <div class="brand-mini display">LinguoBound</div>
     <nav class="topnav">
       <button class="nav-item active" data-i18n="nav.overview">Overview</button>
       <button class="nav-item" data-i18n="nav.itinerary">Itinerary</button>
@@ -25,12 +26,14 @@
         <button type="button" data-set-lang="en">EN</button>
       </div>
       <div class="citizen-chip">
-        <div class="citizen-avatar">CP</div>
+        <div class="citizen-avatar" id="citizen-avatar">CP</div>
         <div>
-          <div class="citizen-name">Carlito Pires</div>
+          <div class="citizen-name" id="citizen-name">Carlito Pires</div>
           <div class="eyebrow citizen-tier" id="tier-label">Cidadão Base</div>
         </div>
       </div>
+      <button class="btn btn-ghost" id="signout-btn" data-i18n="common.signout"
+              style="padding:9px 14px; font-size:11px">Sign out</button>
     </div>
   </header>
 
@@ -96,5 +99,6 @@
   <script src="js/i18n.js"></script>
   <script src="js/radar.js"></script>
   <script src="js/dashboard.js"></script>
+  <script type="module" src="js/session.js"></script>
 </body>
 </html>

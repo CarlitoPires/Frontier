@@ -1,5 +1,5 @@
 /* ============================================================
-   FRONTIER — "Obsidian Editorial" Design System
+   LinguoBound — "Obsidian Editorial" Design System
    Quiet Luxury · Architectural Minimalism · Dark Mode
    ============================================================ */
 
@@ -144,6 +144,8 @@ body {
 }
 .btn-gold:hover { box-shadow: 0 16px 50px -20px rgba(184,153,104,0.5); }
 
+.btn-ghost { background: var(--slate-800); }
+
 /* --- Inputs --- */
 .field { position: relative; margin-bottom: 18px; }
 .field input {
@@ -222,6 +224,17 @@ body.weather-rain .atmosphere {
   background: linear-gradient(180deg, var(--gold-soft), var(--gold-matte));
   font-weight: 600;
 }
+
+/* --- Session gate veil (auth-gated pages) --- */
+.lb-veil {
+  position: fixed; inset: 0; z-index: 90;
+  background: var(--obsidian);
+  display: grid; place-items: center;
+  color: var(--ink-500);
+  font-size: 11px; letter-spacing: var(--tracking-editorial); text-transform: uppercase;
+  transition: opacity 0.45s var(--ease-cine);
+}
+.lb-veil.hidden { opacity: 0; pointer-events: none; }
 
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation: none !important; transition: none !important; }

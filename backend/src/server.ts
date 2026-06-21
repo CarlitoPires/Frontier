@@ -1,4 +1,4 @@
-/* FRONTIER — API entrypoint */
+/* LinguoBound — API entrypoint */
 import express from "express";
 import { router } from "./routes";
 
@@ -7,4 +7,4 @@ app.use(express.json());
 app.use("/api", router);
 
 const PORT = process.env.PORT ?? 4000;
-app.listen(PORT, () => console.log(`FRONTIER API listening on :${PORT}`));
+app.listen(PORT, () => console.log(`LinguoBound API listening on :${PORT}`));

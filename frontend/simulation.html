@@ -3,12 +3,13 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-  <title>FRONTIER · Controle Alfandegário</title>
+  <title>LinguoBound · Controle Alfandegário</title>
   <link rel="stylesheet" href="css/obsidian.css" />
   <link rel="stylesheet" href="css/hud.css" />
 </head>
 <body class="sim-body mood-hostile">
   <div class="atmosphere"></div>
+  <div class="lb-veil" id="lb-veil" data-i18n="session.checking">Verifying session…</div>
 
   <!-- Cinematic NPC stage: the officer is presence + light, not a cartoon -->
   <div class="stage" id="stage" aria-hidden="true">
@@ -132,5 +133,6 @@
 
   <script src="js/i18n.js"></script>
   <script src="js/hud.js"></script>
+  <script type="module" src="js/session.js"></script>
 </body>
 </html>

@@ -1,4 +1,4 @@
-# FRONTIER — Real-Life Social Simulator
+# LinguoBound — Real-Life Social Simulator
 
 Hyper-realistic language-survival simulator. AI NPCs in an urban RPG ecosystem
 force organic fluency under pressure. "Quiet Luxury" editorial aesthetic.

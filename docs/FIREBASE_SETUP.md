@@ -1,4 +1,4 @@
-# Firebase setup — FRONTIER (Spark / free plan)
+# Firebase setup — LinguoBound (Spark / free plan)
 
 A concise, step-by-step guide to stand up Auth + Firestore at zero cost
 and get your web config keys.

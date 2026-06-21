@@ -1,5 +1,5 @@
 /* ============================================================
- *  FRONTIER — API routes (Express) showing the gate in action.
+ *  LinguoBound — API routes (Express) showing the gate in action.
  *  Every "play" request passes through canAttemptModule first.
  * ============================================================ */
 

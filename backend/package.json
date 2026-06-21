@@ -1,8 +1,8 @@
 {
-  "name": "frontier-backend",
+  "name": "linguobound-backend",
   "version": "0.1.0",
   "private": true,
-  "description": "FRONTIER — backend: Hard Gate progression, SaaS citizenship hierarchy",
+  "description": "LinguoBound — backend: Hard Gate progression, SaaS citizenship hierarchy",
   "type": "commonjs",
   "scripts": {
     "build": "tsc -p tsconfig.json",

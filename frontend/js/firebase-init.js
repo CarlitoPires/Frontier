@@ -1,5 +1,5 @@
 /* ============================================================
- *  FRONTIER — Firebase connector (Spark plan: Auth + Firestore)
+ *  LinguoBound — Firebase connector (Spark plan: Auth + Firestore)
  *
  *  Zero-build: imports the modular Firebase SDK straight from the
  *  gstatic CDN, so it works by just opening the HTML (no bundler).
@@ -22,6 +22,8 @@ import {
   onAuthStateChanged,
   signInWithEmailAndPassword,
   createUserWithEmailAndPassword,
+  GoogleAuthProvider,
+  signInWithPopup,
   signOut,
 } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
 import {
@@ -55,6 +57,8 @@ export {
   onAuthStateChanged,
   signInWithEmailAndPassword,
   createUserWithEmailAndPassword,
+  GoogleAuthProvider,
+  signInWithPopup,
   signOut,
   doc,
   getDoc,

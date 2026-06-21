@@ -1,4 +1,4 @@
-/* FRONTIER — lightweight canvas Radar Chart (no dependencies).
+/* LinguoBound — lightweight canvas Radar Chart (no dependencies).
    Renders the fluency profile with a cinematic ease-in sweep. */
 
 function drawRadar(canvas, data, opts) {
